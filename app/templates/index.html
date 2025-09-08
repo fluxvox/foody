@@ -9,9 +9,13 @@
     </div>
     
     {% if recipes %}
-        {% for recipe in recipes %}
-            {% include '_recipe.html' %}
-        {% endfor %}
+        <div class="row">
+            {% for recipe in recipes %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    {% include '_recipe.html' %}
+                </div>
+            {% endfor %}
+        </div>
     {% else %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
