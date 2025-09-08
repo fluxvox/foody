@@ -7,14 +7,14 @@
         <div class="col-lg-8">
             <!-- Back Button -->
             <div class="mb-3">
-                <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-outline-secondary">
+                <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-outline-success">
                     <i class="fas fa-arrow-left"></i> {{ _('Back to Recipe') }}
                 </a>
             </div>
 
             <!-- Edit Recipe Card -->
             <div class="card shadow">
-                <div class="card-header bg-warning text-dark">
+                <div class="card-header bg-success text-white">
                     <h4 class="mb-0"><i class="fas fa-edit me-2"></i>{{ _('Edit Recipe') }}</h4>
                 </div>
                 <div class="card-body">
@@ -83,7 +83,7 @@
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-save"></i> {{ _('Update Recipe') }}
                             </button>
-                            <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-outline-secondary btn-lg">
+                            <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-outline-success btn-lg">
                                 <i class="fas fa-times"></i> {{ _('Cancel') }}
                             </a>
                         </div>
@@ -119,9 +119,8 @@
     border-radius: 15px;
 }
 
-.card-header.bg-warning {
+.card-header.bg-success {
     border-radius: 15px 15px 0 0;
-    background-color: #ffc107 !important;
 }
 
 .btn-lg {
@@ -134,8 +133,8 @@
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #ffc107;
-    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
 }
 
 .gap-2 {
