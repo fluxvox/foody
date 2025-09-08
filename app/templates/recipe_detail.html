@@ -67,11 +67,11 @@
                                         <div class="rating-display me-3">
                                             {% for i in range(1, 6) %}
                                                 {% if i <= avg_rating %}
-                                                    <i class="fas fa-star text-warning fs-4"></i>
+                                                    <i class="fas fa-star text-success fs-4"></i>
                                                 {% elif i - 0.5 <= avg_rating %}
-                                                    <i class="fas fa-star-half-alt text-warning fs-4"></i>
+                                                    <i class="fas fa-star-half-alt text-success fs-4"></i>
                                                 {% else %}
-                                                    <i class="far fa-star text-warning fs-4"></i>
+                                                    <i class="far fa-star text-muted fs-4"></i>
                                                 {% endif %}
                                             {% endfor %}
                                         </div>
@@ -307,11 +307,11 @@
 }
 
 .star-option:hover {
-    color: #ffc107;
+    color: #28a745;
 }
 
 .star-option.selected {
-    color: #ffc107;
+    color: #28a745;
 }
 
 .rating-display {
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function highlightStars(rating) {
         starOptions.forEach((star, index) => {
             if (index < rating) {
-                star.style.color = '#ffc107';
+                star.style.color = '#28a745';
                 star.classList.add('selected');
             } else {
                 star.style.color = '#ddd';
