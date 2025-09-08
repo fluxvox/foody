@@ -105,7 +105,6 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
     about_me: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
     last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(
         default=lambda: datetime.now(timezone.utc))
-    last_message_read_time: so.Mapped[Optional[datetime]]
     token: so.Mapped[Optional[str]] = so.mapped_column(
         sa.String(32), index=True, unique=True)
     token_expiration: so.Mapped[Optional[datetime]]
@@ -201,12 +200,6 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
             return
         return db.session.get(User, id)
 
-    def unread_message_count(self):
-        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
-        query = sa.select(Message).where(Message.recipient == self,
-                                         Message.timestamp > last_read_time)
-        return db.session.scalar(sa.select(sa.func.count()).select_from(
-            query.subquery()))
 
     def add_notification(self, name, data):
         db.session.execute(self.notifications.delete().where(
@@ -382,25 +375,21 @@ class Recipe(SearchableMixin, db.Model):
 Post = Recipe
 
 
-class Message(db.Model):
+class Comment(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    sender_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
-                                                 index=True)
-    recipient_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
-                                                    index=True)
-    body: so.Mapped[str] = so.mapped_column(sa.String(140))
+    body: so.Mapped[str] = so.mapped_column(sa.String(500))
     timestamp: so.Mapped[datetime] = so.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc))
+    author_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                                 index=True)
+    recipe_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Recipe.id),
+                                                 index=True)
 
-    author: so.Mapped[User] = so.relationship(
-        foreign_keys='Message.sender_id',
-        back_populates='messages_sent')
-    recipient: so.Mapped[User] = so.relationship(
-        foreign_keys='Message.recipient_id',
-        back_populates='messages_received')
+    author: so.Mapped[User] = so.relationship(back_populates='comments')
+    recipe: so.Mapped[Recipe] = so.relationship(back_populates='comments')
 
     def __repr__(self):
-        return '<Message {}>'.format(self.body)
+        return '<Comment {}>'.format(self.body)
 
 
 class Rating(db.Model):
