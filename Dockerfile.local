@@ -25,8 +25,7 @@ WORKDIR /app
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install gunicorn[gevent] pymysql cryptography
+    pip install -r requirements.txt
 
 # Copy application files
 COPY --chown=foody:foody app app
