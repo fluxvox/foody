@@ -1,7 +1,7 @@
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, IntegerField, SelectField, FieldList, FormField
-from wtforms.validators import ValidationError, DataRequired, Length, Optional, NumberRange
+from wtforms import StringField, SubmitField, TextAreaField, IntegerField, SelectField, FieldList, FormField, PasswordField, BooleanField
+from wtforms.validators import ValidationError, DataRequired, Length, Optional, NumberRange, Email, EqualTo
 from wtforms.widgets import html_params
 import sqlalchemy as sa
 from flask_babel import _, lazy_gettext as _l
@@ -13,7 +13,7 @@ class EditProfileForm(FlaskForm):
     username = StringField(_l('Username'), validators=[DataRequired()])
     about_me = TextAreaField(_l('About me'),
                              validators=[Length(min=0, max=140)])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Update Profile'))
 
     def __init__(self, original_username, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,6 +25,46 @@ class EditProfileForm(FlaskForm):
                 User.username == username.data))
             if user is not None:
                 raise ValidationError(_('Please use a different username.'))
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField(_l('Current Password'), validators=[DataRequired()])
+    new_password = PasswordField(_l('New Password'), validators=[
+        DataRequired(), Length(min=8, max=128)])
+    new_password2 = PasswordField(_l('Repeat New Password'), validators=[
+        DataRequired(), EqualTo('new_password', message=_('Passwords must match'))])
+    submit = SubmitField(_l('Change Password'))
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def validate_current_password(self, current_password):
+        from werkzeug.security import check_password_hash
+        if not check_password_hash(self.user.password_hash, current_password.data):
+            raise ValidationError(_('Current password is incorrect.'))
+
+
+class ChangeEmailForm(FlaskForm):
+    new_email = StringField(_l('New Email'), validators=[DataRequired(), Email()])
+    password = PasswordField(_l('Password'), validators=[DataRequired()])
+    submit = SubmitField(_l('Change Email'))
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def validate_password(self, password):
+        from werkzeug.security import check_password_hash
+        if not check_password_hash(self.user.password_hash, password.data):
+            raise ValidationError(_('Password is incorrect.'))
+
+    def validate_new_email(self, new_email):
+        if new_email.data != self.user.email:
+            user = db.session.scalar(sa.select(User).where(
+                User.email == new_email.data))
+            if user is not None:
+                raise ValidationError(_('Please use a different email address.'))
 
 
 class EmptyForm(FlaskForm):
