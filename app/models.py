@@ -374,6 +374,52 @@ class Recipe(SearchableMixin, db.Model):
             sa.and_(Rating.recipe_id == self.id, Rating.user_id == user.id)))
         return rating
 
+    def to_dict(self, include_author=False):
+        """Convert recipe to dictionary for API responses"""
+        data = {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'ingredients': self.get_ingredients_list(),
+            'instructions': self.instructions,
+            'prep_time': self.prep_time,
+            'cook_time': self.cook_time,
+            'total_time': self.total_time(),
+            'servings': self.servings,
+            'difficulty': self.difficulty,
+            'category': self.category,
+            'image_url': self.image_url,
+            'timestamp': self.timestamp.replace(tzinfo=timezone.utc).isoformat(),
+            'language': self.language,
+            'average_rating': self.get_average_rating(),
+            'rating_count': self.get_rating_count(),
+            '_links': {
+                'self': f'/api/recipes/{self.id}',
+                'author': f'/api/users/{self.user_id}',
+                'ratings': f'/api/recipes/{self.id}/ratings'
+            }
+        }
+        if include_author:
+            data['author'] = self.author.to_dict()
+        return data
+
+    def from_dict(self, data, new_recipe=False):
+        """Create or update recipe from dictionary"""
+        for field in ['title', 'description', 'instructions', 'prep_time', 
+                     'cook_time', 'servings', 'difficulty', 'category', 
+                     'image_url', 'language']:
+            if field in data:
+                setattr(self, field, data[field])
+        
+        if 'ingredients' in data:
+            if isinstance(data['ingredients'], list):
+                self.set_ingredients_list(data['ingredients'])
+            else:
+                self.ingredients = data['ingredients']
+        
+        if new_recipe and 'user_id' in data:
+            self.user_id = data['user_id']
+
 
 class Message(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -415,7 +461,7 @@ class Comment(db.Model):
         return '<Comment {}>'.format(self.body)
 
 
-class Rating(db.Model):
+class Rating(PaginatedAPIMixin, db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     rating: so.Mapped[int] = so.mapped_column(sa.Integer)  # 1-5 stars
     timestamp: so.Mapped[datetime] = so.mapped_column(
@@ -433,6 +479,24 @@ class Rating(db.Model):
 
     def __repr__(self):
         return '<Rating {} stars by {}>'.format(self.rating, self.user.username)
+
+    def to_dict(self, include_user=False):
+        """Convert rating to dictionary for API responses"""
+        data = {
+            'id': self.id,
+            'rating': self.rating,
+            'timestamp': self.timestamp.replace(tzinfo=timezone.utc).isoformat(),
+            'recipe_id': self.recipe_id,
+            'user_id': self.user_id,
+            '_links': {
+                'self': f'/api/recipes/{self.recipe_id}/ratings/{self.id}',
+                'user': f'/api/users/{self.user_id}',
+                'recipe': f'/api/recipes/{self.recipe_id}'
+            }
+        }
+        if include_user:
+            data['user'] = self.user.to_dict()
+        return data
 
 
 class Notification(db.Model):
