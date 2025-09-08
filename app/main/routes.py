@@ -4,11 +4,12 @@ from flask import render_template, flash, redirect, url_for, request, g, \
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 import sqlalchemy as sa
+import json
 from langdetect import detect, LangDetectException
 from app import db
-from app.main.forms import EditProfileForm, EmptyForm, PostForm, SearchForm, \
+from app.main.forms import EditProfileForm, EmptyForm, PostForm, RecipeForm, SearchForm, \
     MessageForm
-from app.models import User, Post, Message, Notification
+from app.models import User, Post, Recipe, Message, Notification
 from app.translate import translate
 from app.main import bp
 
@@ -22,50 +23,186 @@ def before_request():
     g.locale = str(get_locale())
 
 
-@bp.route('/', methods=['GET', 'POST'])
-@bp.route('/index', methods=['GET', 'POST'])
+@bp.route('/')
+@bp.route('/index')
 @login_required
 def index():
-    form = PostForm()
+    page = request.args.get('page', 1, type=int)
+    query = sa.select(Recipe).order_by(Recipe.timestamp.desc())
+    recipes = db.paginate(query, page=page,
+                         per_page=current_app.config['POSTS_PER_PAGE'],
+                         error_out=False)
+    next_url = url_for('main.index', page=recipes.next_num) \
+        if recipes.has_next else None
+    prev_url = url_for('main.index', page=recipes.prev_num) \
+        if recipes.has_prev else None
+    return render_template('index.html', title=_('All Recipes'),
+                           recipes=recipes.items, next_url=next_url,
+                           prev_url=prev_url)
+
+
+@bp.route('/following')
+@login_required
+def following():
+    page = request.args.get('page', 1, type=int)
+    recipes = db.paginate(current_user.following_recipes(), page=page,
+                         per_page=current_app.config['POSTS_PER_PAGE'],
+                         error_out=False)
+    next_url = url_for('main.following', page=recipes.next_num) \
+        if recipes.has_next else None
+    prev_url = url_for('main.following', page=recipes.prev_num) \
+        if recipes.has_prev else None
+    return render_template('index.html', title=_('Following'),
+                           recipes=recipes.items, next_url=next_url,
+                           prev_url=prev_url)
+
+
+
+
+@bp.route('/share', methods=['GET', 'POST'])
+@login_required
+def share_recipe():
+    form = RecipeForm()
     if form.validate_on_submit():
         try:
-            language = detect(form.post.data)
+            language = detect(form.title.data + ' ' + form.description.data)
         except LangDetectException:
             language = ''
-        post = Post(body=form.post.data, author=current_user,
-                    language=language)
-        db.session.add(post)
+        # Parse ingredients text into structured format
+        ingredients_list = []
+        for line in form.ingredients.data.strip().split('\n'):
+            line = line.strip()
+            if line:
+                # Try to parse "amount unit ingredient" format
+                parts = line.split(' ', 2)
+                if len(parts) >= 3:
+                    ingredients_list.append({
+                        'amount': parts[0],
+                        'unit': parts[1],
+                        'ingredient': parts[2]
+                    })
+                elif len(parts) == 2:
+                    ingredients_list.append({
+                        'amount': parts[0],
+                        'unit': '',
+                        'ingredient': parts[1]
+                    })
+                else:
+                    ingredients_list.append({
+                        'amount': '',
+                        'unit': '',
+                        'ingredient': line
+                    })
+        
+        recipe = Recipe(
+            title=form.title.data,
+            description=form.description.data,
+            ingredients=json.dumps(ingredients_list),
+            instructions=form.instructions.data,
+            prep_time=form.prep_time.data,
+            cook_time=form.cook_time.data,
+            servings=form.servings.data,
+            difficulty=form.difficulty.data,
+            category=form.category.data,
+            image_url=form.image_url.data,
+            author=current_user,
+            language=language
+        )
+        db.session.add(recipe)
         db.session.commit()
-        flash(_('Your post is now live!'))
+        flash(_('Your recipe has been shared!'))
         return redirect(url_for('main.index'))
-    page = request.args.get('page', 1, type=int)
-    posts = db.paginate(current_user.following_posts(), page=page,
-                        per_page=current_app.config['POSTS_PER_PAGE'],
-                        error_out=False)
-    next_url = url_for('main.index', page=posts.next_num) \
-        if posts.has_next else None
-    prev_url = url_for('main.index', page=posts.prev_num) \
-        if posts.has_prev else None
-    return render_template('index.html', title=_('Home'), form=form,
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+    return render_template('share_recipe.html', title=_('Share Recipe'), form=form)
 
 
-@bp.route('/explore')
+@bp.route('/recipe/<int:id>')
 @login_required
-def explore():
-    page = request.args.get('page', 1, type=int)
-    query = sa.select(Post).order_by(Post.timestamp.desc())
-    posts = db.paginate(query, page=page,
-                        per_page=current_app.config['POSTS_PER_PAGE'],
-                        error_out=False)
-    next_url = url_for('main.explore', page=posts.next_num) \
-        if posts.has_next else None
-    prev_url = url_for('main.explore', page=posts.prev_num) \
-        if posts.has_prev else None
-    return render_template('index.html', title=_('Explore'),
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+def recipe_detail(id):
+    recipe = db.first_or_404(sa.select(Recipe).where(Recipe.id == id))
+    return render_template('recipe_detail.html', title=recipe.title, recipe=recipe)
+
+
+@bp.route('/recipe/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_recipe(id):
+    recipe = db.first_or_404(sa.select(Recipe).where(Recipe.id == id))
+    # Check if user is the author of the recipe
+    if recipe.author != current_user:
+        flash(_('You can only edit your own recipes.'))
+        return redirect(url_for('main.recipe_detail', id=id))
+    
+    form = RecipeForm()
+    if form.validate_on_submit():
+        try:
+            language = detect(form.title.data + ' ' + form.description.data)
+        except LangDetectException:
+            language = ''
+        
+        # Parse ingredients text into structured format
+        ingredients_list = []
+        for line in form.ingredients.data.strip().split('\n'):
+            line = line.strip()
+            if line:
+                # Try to parse "amount unit ingredient" format
+                parts = line.split(' ', 2)
+                if len(parts) >= 3:
+                    ingredients_list.append({
+                        'amount': parts[0],
+                        'unit': parts[1],
+                        'ingredient': parts[2]
+                    })
+                elif len(parts) == 2:
+                    ingredients_list.append({
+                        'amount': parts[0],
+                        'unit': '',
+                        'ingredient': parts[1]
+                    })
+                else:
+                    ingredients_list.append({
+                        'amount': '',
+                        'unit': '',
+                        'ingredient': line
+                    })
+        
+        # Update recipe fields
+        recipe.title = form.title.data
+        recipe.description = form.description.data
+        recipe.ingredients = json.dumps(ingredients_list)
+        recipe.instructions = form.instructions.data
+        recipe.prep_time = form.prep_time.data
+        recipe.cook_time = form.cook_time.data
+        recipe.servings = form.servings.data
+        recipe.difficulty = form.difficulty.data
+        recipe.category = form.category.data
+        recipe.image_url = form.image_url.data
+        recipe.language = language
+        
+        db.session.commit()
+        flash(_('Your recipe has been updated!'))
+        return redirect(url_for('main.recipe_detail', id=id))
+    elif request.method == 'GET':
+        # Pre-populate form with existing recipe data
+        form.title.data = recipe.title
+        form.description.data = recipe.description
+        # Convert ingredients back to text format for editing
+        ingredients_text = []
+        for ingredient in recipe.get_ingredients_list():
+            if ingredient.get('amount') and ingredient.get('unit'):
+                ingredients_text.append(f"{ingredient['amount']} {ingredient['unit']} {ingredient.get('ingredient', '')}")
+            elif ingredient.get('amount'):
+                ingredients_text.append(f"{ingredient['amount']} {ingredient.get('ingredient', '')}")
+            else:
+                ingredients_text.append(ingredient.get('ingredient', ''))
+        form.ingredients.data = '\n'.join(ingredients_text)
+        form.instructions.data = recipe.instructions
+        form.prep_time.data = recipe.prep_time
+        form.cook_time.data = recipe.cook_time
+        form.servings.data = recipe.servings
+        form.difficulty.data = recipe.difficulty
+        form.category.data = recipe.category
+        form.image_url.data = recipe.image_url
+    
+    return render_template('edit_recipe.html', title=_('Edit Recipe'), form=form, recipe=recipe)
 
 
 @bp.route('/user/<username>')
@@ -73,16 +210,16 @@ def explore():
 def user(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
     page = request.args.get('page', 1, type=int)
-    query = user.posts.select().order_by(Post.timestamp.desc())
-    posts = db.paginate(query, page=page,
-                        per_page=current_app.config['POSTS_PER_PAGE'],
-                        error_out=False)
+    query = user.recipes.select().order_by(Recipe.timestamp.desc())
+    recipes = db.paginate(query, page=page,
+                         per_page=current_app.config['POSTS_PER_PAGE'],
+                         error_out=False)
     next_url = url_for('main.user', username=user.username,
-                       page=posts.next_num) if posts.has_next else None
+                       page=recipes.next_num) if recipes.has_next else None
     prev_url = url_for('main.user', username=user.username,
-                       page=posts.prev_num) if posts.has_prev else None
+                       page=recipes.prev_num) if recipes.has_prev else None
     form = EmptyForm()
-    return render_template('user.html', user=user, posts=posts.items,
+    return render_template('user.html', user=user, recipes=recipes.items,
                            next_url=next_url, prev_url=prev_url, form=form)
 
 

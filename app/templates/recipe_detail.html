@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Back Button and Edit Button -->
+            <div class="mb-3 d-flex justify-content-between">
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> {{ _('Back to Home') }}
+                </a>
+                {% if recipe.author == current_user %}
+                <a href="{{ url_for('main.edit_recipe', id=recipe.id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> {{ _('Edit Recipe') }}
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Recipe Card -->
+            <div class="card shadow">
+                <!-- Recipe Image -->
+                {% if recipe.image_url %}
+                <img src="{{ recipe.image_url }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 300px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                    <i class="fas fa-utensils fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <!-- Recipe Header -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="card-title h2 mb-2">{{ recipe.title }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-user"></i> 
+                                <a href="{{ url_for('main.user', username=recipe.author.username) }}" class="text-decoration-none">
+                                    {{ recipe.author.username }}
+                                </a>
+                                <span class="mx-2">•</span>
+                                <i class="fas fa-clock"></i> {{ moment(recipe.timestamp).fromNow() }}
+                            </p>
+                        </div>
+                        {% if recipe.category %}
+                        <span class="badge bg-primary fs-6">{{ recipe.category }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Recipe Description -->
+                    {% if recipe.description %}
+                    <div class="mb-4">
+                        <p class="card-text lead">{{ recipe.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Recipe Meta Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-6 mb-2">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-clock text-primary mb-2"></i>
+                                <div class="fw-bold">{{ recipe.formatted_time(recipe.prep_time) }}</div>
+                                <small class="text-muted">{{ _('Prep Time') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-fire text-danger mb-2"></i>
+                                <div class="fw-bold">{{ recipe.formatted_time(recipe.cook_time) }}</div>
+                                <small class="text-muted">{{ _('Cook Time') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-users text-success mb-2"></i>
+                                <div class="fw-bold">{{ recipe.servings or 'N/A' }}</div>
+                                <small class="text-muted">{{ _('Servings') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <div class="text-center p-3 bg-light rounded">
+                                <i class="fas fa-signal text-warning mb-2"></i>
+                                <div class="fw-bold">{{ recipe.difficulty or 'N/A' }}</div>
+                                <small class="text-muted">{{ _('Difficulty') }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Time -->
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>{{ _('Total Time') }}:</strong> {{ recipe.formatted_time(recipe.total_time()) }}
+                    </div>
+
+                    <!-- Ingredients Section -->
+                    <div class="mb-4">
+                        <h3 class="h4 mb-3">
+                            <i class="fas fa-list text-primary me-2"></i>{{ _('Ingredients') }}
+                        </h3>
+                        <div class="bg-light p-3 rounded">
+                            <ul class="list-unstyled mb-0">
+                                {% for ingredient in recipe.get_ingredients_list() %}
+                                <li class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-circle text-primary me-3" style="font-size: 0.5em;"></i>
+                                    <span>
+                                        {% if ingredient.amount or ingredient.unit %}
+                                            <strong>{{ ingredient.amount }} {{ ingredient.unit }}</strong>
+                                            {% if ingredient.ingredient %} {{ ingredient.ingredient }}{% endif %}
+                                        {% else %}
+                                            {{ ingredient.ingredient }}
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Instructions Section -->
+                    <div class="mb-4">
+                        <h3 class="h4 mb-3">
+                            <i class="fas fa-clipboard-list text-success me-2"></i>{{ _('Instructions') }}
+                        </h3>
+                        <div class="bg-light p-3 rounded">
+                            <div class="recipe-instructions">
+                                {{ recipe.instructions | replace('\n', '<br>') | safe }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Author Information -->
+                    <div class="border-top pt-3 mt-4">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ recipe.author.avatar(32) }}" class="rounded-circle me-3" alt="{{ recipe.author.username }}">
+                            <div>
+                                <div class="fw-bold">
+                                    <a href="{{ url_for('main.user', username=recipe.author.username) }}" class="text-decoration-none">
+                                        {{ recipe.author.username }}
+                                    </a>
+                                </div>
+                                <small class="text-muted">
+                                    {{ _('Shared') }} {{ moment(recipe.timestamp).fromNow() }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.recipe-instructions {
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.card-img-top {
+    border-radius: 15px 15px 0 0;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    border-color: #bbdefb;
+    color: #0d47a1;
+}
+</style>
+{% endblock %}

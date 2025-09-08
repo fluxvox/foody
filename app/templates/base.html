@@ -24,10 +24,15 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('main.index') }}">{{ _('Home') }}</a>
+              <a class="nav-link" aria-current="page" href="{{ url_for('main.index') }}">{{ _('All Recipes') }}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('main.explore') }}">{{ _('Explore') }}</a>
+              <a class="nav-link" aria-current="page" href="{{ url_for('main.following') }}">{{ _('Following') }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="{{ url_for('main.share_recipe') }}">
+                <i class="fas fa-plus"></i> {{ _('Share Recipe') }}
+              </a>
             </li>
             {% if g.search_form %}
             <form class="navbar-form navbar-left" method="get" action="{{ url_for('main.search') }}">
@@ -176,6 +181,87 @@
       }
       document.addEventListener('DOMContentLoaded', initialize_notifications);
       {% endif %}
+
+      // Dynamic ingredients functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('ingredients-container');
+        const addButton = document.getElementById('add-ingredient');
+        
+        if (container && addButton) {
+          let ingredientIndex = container.querySelectorAll('.ingredient-row').length;
+
+          // Add ingredient row
+          addButton.addEventListener('click', function() {
+            const newRow = document.createElement('div');
+            newRow.className = 'ingredient-row mb-2';
+            newRow.setAttribute('data-index', ingredientIndex);
+            
+            newRow.innerHTML = `
+              <div class="row">
+                <div class="col-md-3">
+                  <input type="text" class="form-control form-control-sm" name="ingredients-${ingredientIndex}-amount" placeholder="{{ _('Amount') }}">
+                </div>
+                <div class="col-md-3">
+                  <select class="form-select form-select-sm" name="ingredients-${ingredientIndex}-unit">
+                    <option value="">{{ _('Select unit') }}</option>
+                    <option value="cup">{{ _('cup') }}</option>
+                    <option value="cups">{{ _('cups') }}</option>
+                    <option value="tbsp">{{ _('tablespoon') }}</option>
+                    <option value="tbsp">{{ _('tablespoons') }}</option>
+                    <option value="tsp">{{ _('teaspoon') }}</option>
+                    <option value="tsp">{{ _('teaspoons') }}</option>
+                    <option value="ml">{{ _('ml') }}</option>
+                    <option value="l">{{ _('liter') }}</option>
+                    <option value="g">{{ _('grams') }}</option>
+                    <option value="kg">{{ _('kg') }}</option>
+                    <option value="oz">{{ _('ounces') }}</option>
+                    <option value="lb">{{ _('pounds') }}</option>
+                    <option value="piece">{{ _('piece') }}</option>
+                    <option value="pieces">{{ _('pieces') }}</option>
+                    <option value="clove">{{ _('clove') }}</option>
+                    <option value="cloves">{{ _('cloves') }}</option>
+                    <option value="pinch">{{ _('pinch') }}</option>
+                    <option value="dash">{{ _('dash') }}</option>
+                    <option value="to taste">{{ _('to taste') }}</option>
+                    <option value="as needed">{{ _('as needed') }}</option>
+                  </select>
+                </div>
+                <div class="col-md-5">
+                  <input type="text" class="form-control form-control-sm" name="ingredients-${ingredientIndex}-ingredient" placeholder="{{ _('Ingredient name') }}" required>
+                </div>
+                <div class="col-md-1">
+                  <button type="button" class="btn btn-outline-danger btn-sm remove-ingredient">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            `;
+            
+            container.appendChild(newRow);
+            ingredientIndex++;
+            updateRemoveButtons();
+          });
+
+          // Remove ingredient row
+          container.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-ingredient')) {
+              e.target.closest('.ingredient-row').remove();
+              updateRemoveButtons();
+            }
+          });
+
+          // Update remove buttons visibility
+          function updateRemoveButtons() {
+            const rows = container.querySelectorAll('.ingredient-row');
+            rows.forEach((row, index) => {
+              const removeBtn = row.querySelector('.remove-ingredient');
+              if (removeBtn) {
+                removeBtn.style.display = rows.length > 1 ? 'block' : 'none';
+              }
+            });
+          }
+        }
+      });
     </script>
   </body>
 </html>
