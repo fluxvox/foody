@@ -39,3 +39,15 @@ venv
 app.db
 logs/
 *.log
+
+# Production files
+.env
+.env.local
+.env.production
+deployment/nginx/ssl/
+*.pem
+*.key
+*.crt
+
+# Docker
+.dockerignore

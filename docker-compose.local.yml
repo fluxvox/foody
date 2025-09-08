@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: foody-db-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: foody
+      POSTGRES_USER: foody
+      POSTGRES_PASSWORD: foody123
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - foody-local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foody -d foody"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for background tasks
+  redis:
+    image: redis:7-alpine
+    container_name: foody-redis-local
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_local:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - foody-local
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Elasticsearch for search functionality
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: foody-elasticsearch-local
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    volumes:
+      - elasticsearch_data_local:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - foody-local
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Main Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: foody-web-local
+    restart: unless-stopped
+    environment:
+      # Database
+      DATABASE_URL: postgresql://foody:foody123@db:5432/foody
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      
+      # Elasticsearch
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      
+      # Application
+      FLASK_ENV: development
+      SECRET_KEY: dev-secret-key-not-for-production
+      
+      # Email (using console for local testing)
+      MAIL_SERVER: localhost
+      MAIL_PORT: 1025
+      MAIL_USE_TLS: false
+      MAIL_USERNAME: 
+      MAIL_PASSWORD: 
+      ADMINS: admin@localhost
+      
+      # Gunicorn (reduced for local testing)
+      GUNICORN_WORKERS: 2
+      GUNICORN_WORKER_CONNECTIONS: 100
+      GUNICORN_MAX_REQUESTS: 100
+      GUNICORN_TIMEOUT: 30
+      LOG_LEVEL: debug
+    ports:
+      - "5001:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - foody-local
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Background Task Worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: foody-worker-local
+    restart: unless-stopped
+    command: rq worker foody-tasks
+    environment:
+      # Database
+      DATABASE_URL: postgresql://foody:foody123@db:5432/foody
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      
+      # Application
+      FLASK_ENV: development
+      SECRET_KEY: dev-secret-key-not-for-production
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - foody-local
+
+volumes:
+  postgres_data_local:
+    driver: local
+  redis_data_local:
+    driver: local
+  elasticsearch_data_local:
+    driver: local
+
+networks:
+  foody-local:
+    driver: bridge

@@ -426,6 +426,35 @@ def search():
 
 
 
+@bp.route('/health')
+def health_check():
+    """Health check endpoint for Docker and load balancers"""
+    try:
+        # Check database connection
+        db.session.execute(sa.text('SELECT 1'))
+        
+        # Check Redis connection (if configured)
+        try:
+            from app import redis
+            redis.ping()
+            redis_status = 'healthy'
+        except:
+            redis_status = 'unavailable'
+        
+        return {
+            'status': 'healthy',
+            'database': 'connected',
+            'redis': redis_status,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        }, 200
+    except Exception as e:
+        return {
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        }, 503
+
+
 @bp.route('/notifications')
 @login_required
 def notifications():
