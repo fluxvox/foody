@@ -122,6 +122,12 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
         secondary=followers, primaryjoin=(followers.c.followed_id == id),
         secondaryjoin=(followers.c.follower_id == id),
         back_populates='following')
+    messages_sent: so.WriteOnlyMapped['Message'] = so.relationship(
+        foreign_keys='Message.sender_id', back_populates='author')
+    messages_received: so.WriteOnlyMapped['Message'] = so.relationship(
+        foreign_keys='Message.recipient_id', back_populates='recipient')
+    ratings: so.WriteOnlyMapped['Rating'] = so.relationship(
+        back_populates='user')
     comments: so.WriteOnlyMapped['Comment'] = so.relationship(
         back_populates='author')
     notifications: so.WriteOnlyMapped['Notification'] = so.relationship(
@@ -307,6 +313,8 @@ class Recipe(SearchableMixin, db.Model):
     language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(5))
 
     author: so.Mapped[User] = so.relationship(back_populates='recipes')
+    ratings: so.WriteOnlyMapped['Rating'] = so.relationship(
+        back_populates='recipe', cascade='all, delete-orphan')
     comments: so.WriteOnlyMapped['Comment'] = so.relationship(
         back_populates='recipe', cascade='all, delete-orphan')
 
@@ -344,8 +352,46 @@ class Recipe(SearchableMixin, db.Model):
     def get_ingredients_text(self):
         """Get ingredients as formatted text for search"""
         ingredients_list = self.get_ingredients_list()
-        return " ".join([f"{ing.get('amount', '')} {ing.get('unit', '')} {ing.get('ingredient', '')}".strip() 
+        return " ".join([f"{ing.get('amount', '')} {ing.get('unit', '')} {ing.get('ingredient', '')}".strip()
                         for ing in ingredients_list])
+
+    def get_average_rating(self):
+        """Calculate average rating for this recipe"""
+        ratings = db.session.scalars(sa.select(Rating.rating).where(Rating.recipe_id == self.id)).all()
+        if not ratings:
+            return 0
+        return round(sum(ratings) / len(ratings), 1)
+
+    def get_rating_count(self):
+        """Get total number of ratings for this recipe"""
+        return db.session.scalar(sa.select(sa.func.count(Rating.id)).where(Rating.recipe_id == self.id))
+
+    def get_user_rating(self, user):
+        """Get rating given by a specific user for this recipe"""
+        if user.is_anonymous:
+            return None
+        rating = db.session.scalar(sa.select(Rating.rating).where(
+            sa.and_(Rating.recipe_id == self.id, Rating.user_id == user.id)))
+        return rating
+
+
+class Message(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    sender_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                                 index=True)
+    recipient_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                                    index=True)
+    body: so.Mapped[str] = so.mapped_column(sa.String(500))
+    timestamp: so.Mapped[datetime] = so.mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc))
+
+    author: so.Mapped[User] = so.relationship(
+        foreign_keys='Message.sender_id', back_populates='messages_sent')
+    recipient: so.Mapped[User] = so.relationship(
+        foreign_keys='Message.recipient_id', back_populates='messages_received')
+
+    def __repr__(self):
+        return '<Message {}>'.format(self.body)
 
 
 # Keep Post model for backward compatibility, but alias it to Recipe
@@ -367,6 +413,26 @@ class Comment(db.Model):
 
     def __repr__(self):
         return '<Comment {}>'.format(self.body)
+
+
+class Rating(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    rating: so.Mapped[int] = so.mapped_column(sa.Integer)  # 1-5 stars
+    timestamp: so.Mapped[datetime] = so.mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc))
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                               index=True)
+    recipe_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Recipe.id),
+                                                 index=True)
+    
+    # Ensure one rating per user per recipe
+    __table_args__ = (sa.UniqueConstraint('user_id', 'recipe_id', name='unique_user_recipe_rating'),)
+
+    user: so.Mapped[User] = so.relationship(back_populates='ratings')
+    recipe: so.Mapped[Recipe] = so.relationship(back_populates='ratings')
+
+    def __repr__(self):
+        return '<Rating {} stars by {}>'.format(self.rating, self.user.username)
 
 
 class Notification(db.Model):

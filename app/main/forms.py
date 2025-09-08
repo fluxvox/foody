@@ -113,6 +113,12 @@ class SearchForm(FlaskForm):
         super(SearchForm, self).__init__(*args, **kwargs)
 
 
+class MessageForm(FlaskForm):
+    message = TextAreaField(_l('Message'), validators=[
+        DataRequired(), Length(min=0, max=500)])
+    submit = SubmitField(_l('Submit'))
+
+
 class CommentForm(FlaskForm):
     body = TextAreaField(_l('Comment'), validators=[
         DataRequired(), Length(min=1, max=500)])
