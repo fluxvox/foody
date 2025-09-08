@@ -8,8 +8,8 @@ import json
 from langdetect import detect, LangDetectException
 from app import db
 from app.main.forms import EditProfileForm, EmptyForm, PostForm, RecipeForm, SearchForm, \
-    CommentForm
-from app.models import User, Post, Recipe, Comment, Notification
+    MessageForm
+from app.models import User, Post, Recipe, Message, Notification, Rating
 from app.translate import translate
 from app.main import bp
 
@@ -134,6 +134,40 @@ def recipe_detail(id):
     
     return render_template('recipe_detail.html', title=recipe.title, recipe=recipe,
                           form=form, comments=comments.items)
+
+
+@bp.route('/recipe/<int:id>/rate', methods=['POST'])
+@login_required
+def rate_recipe(id):
+    recipe = db.first_or_404(sa.select(Recipe).where(Recipe.id == id))
+    rating_value = request.form.get('rating')
+    
+    if not rating_value or not rating_value.isdigit():
+        flash(_('Invalid rating value.'))
+        return redirect(url_for('main.recipe_detail', id=id))
+    
+    rating_value = int(rating_value)
+    if rating_value < 1 or rating_value > 5:
+        flash(_('Rating must be between 1 and 5 stars.'))
+        return redirect(url_for('main.recipe_detail', id=id))
+    
+    # Check if user already rated this recipe
+    existing_rating = db.session.scalar(sa.select(Rating).where(
+        sa.and_(Rating.recipe_id == id, Rating.user_id == current_user.id)))
+    
+    if existing_rating:
+        # Update existing rating
+        existing_rating.rating = rating_value
+        existing_rating.timestamp = datetime.now(timezone.utc)
+        flash(_('Your rating has been updated!'))
+    else:
+        # Create new rating
+        rating = Rating(rating=rating_value, user=current_user, recipe=recipe)
+        db.session.add(rating)
+        flash(_('Thank you for rating this recipe!'))
+    
+    db.session.commit()
+    return redirect(url_for('main.recipe_detail', id=id))
 
 
 @bp.route('/recipe/<int:id>/edit', methods=['GET', 'POST'])
