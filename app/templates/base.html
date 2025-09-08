@@ -289,6 +289,99 @@
                 font-size: 1rem;
             }
         }
+        
+        /* Cookie Banner Styles */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(32, 201, 151, 0.95) 100%);
+            color: white;
+            padding: 1rem;
+            z-index: 1050;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .cookie-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 1rem;
+        }
+        
+        .cookie-text h6 {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .cookie-text p {
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+        
+        .cookie-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        /* Diploma Notice Styles */
+        .diploma-notice {
+            background-color: #f8f9fa;
+            border-top: 3px solid #28a745;
+            padding: 0.75rem 0;
+            margin-top: 2rem;
+        }
+        
+        .diploma-notice p {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        
+        .diploma-notice i {
+            color: #28a745;
+        }
+        
+        /* Responsive adjustments for cookie banner */
+        @media (max-width: 768px) {
+            .cookie-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .cookie-buttons {
+                justify-content: center;
+            }
+            
+            .cookie-text h6 {
+                font-size: 1rem;
+            }
+            
+            .cookie-text p {
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .cookie-banner {
+                padding: 0.75rem;
+            }
+            
+            .cookie-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .cookie-buttons .btn {
+                width: 100%;
+            }
+        }
     </style>
   </head>
   <body>
@@ -549,6 +642,86 @@
           }
         }
       });
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" class="cookie-banner" style="display: none;">
+        <div class="cookie-content">
+            <div class="cookie-text">
+                <h6><i class="fas fa-cookie-bite me-2"></i>{{ _('Cookie Notice') }}</h6>
+                <p class="mb-0">{{ _('This website uses cookies to enhance your experience. By continuing to use this site, you consent to our use of cookies.') }}</p>
+            </div>
+            <div class="cookie-buttons">
+                <button type="button" class="btn btn-outline-light btn-sm me-2" onclick="declineCookies()">
+                    {{ _('Decline') }}
+                </button>
+                <button type="button" class="btn btn-success btn-sm" onclick="acceptCookies()">
+                    {{ _('Accept') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diploma Project Notice -->
+    <div class="diploma-notice">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        <strong>{{ _('Diploma Project') }}:</strong> 
+                        {{ _('This website is a project created for educational purposes as part of a diploma program.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cookie Banner Functionality
+        function showCookieBanner() {
+            const banner = document.getElementById('cookieBanner');
+            if (!getCookie('cookieConsent')) {
+                banner.style.display = 'block';
+            }
+        }
+
+        function acceptCookies() {
+            setCookie('cookieConsent', 'accepted', 365);
+            hideCookieBanner();
+        }
+
+        function declineCookies() {
+            setCookie('cookieConsent', 'declined', 365);
+            hideCookieBanner();
+        }
+
+        function hideCookieBanner() {
+            const banner = document.getElementById('cookieBanner');
+            banner.style.display = 'none';
+        }
+
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = name + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Show cookie banner on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showCookieBanner();
+        });
     </script>
   </body>
 </html>
