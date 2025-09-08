@@ -53,6 +53,67 @@
                     </div>
                     {% endif %}
 
+                    <!-- Rating Section -->
+                    <div class="mb-4">
+                        {% set avg_rating = recipe.get_average_rating() %}
+                        {% set rating_count = recipe.get_rating_count() %}
+                        {% set user_rating = recipe.get_user_rating(current_user) %}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-2">{{ _('Rating') }}</h5>
+                                {% if avg_rating > 0 %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="rating-display me-3">
+                                            {% for i in range(1, 6) %}
+                                                {% if i <= avg_rating %}
+                                                    <i class="fas fa-star text-warning fs-4"></i>
+                                                {% elif i - 0.5 <= avg_rating %}
+                                                    <i class="fas fa-star-half-alt text-warning fs-4"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning fs-4"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div>
+                                            <strong class="fs-5">{{ "%.1f"|format(avg_rating) }}</strong>
+                                            <small class="text-muted ms-2">
+                                                ({{ rating_count }} {{ _('rating') if rating_count == 1 else _('ratings') }})
+                                            </small>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted mb-0">
+                                        <i class="far fa-star text-muted"></i> {{ _('No ratings yet') }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Rating Form -->
+                            <div>
+                                <form method="POST" action="{{ url_for('main.rate_recipe', id=recipe.id) }}" class="d-inline">
+                                    <div class="rating-input">
+                                        <label class="form-label">{{ _('Your Rating') }}:</label>
+                                        <div class="star-rating" id="starRating">
+                                            <span class="star-option" data-rating="1">★</span>
+                                            <span class="star-option" data-rating="2">★</span>
+                                            <span class="star-option" data-rating="3">★</span>
+                                            <span class="star-option" data-rating="4">★</span>
+                                            <span class="star-option" data-rating="5">★</span>
+                                            <input type="hidden" name="rating" id="selectedRating" value="">
+                                        </div>
+                                        <div class="rating-feedback mt-2">
+                                            <small class="text-muted" id="ratingText">{{ _('Click a star to rate') }}</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary mt-2" id="rateButton" disabled>
+                                            {{ _('Rate Recipe') }}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Recipe Meta Information -->
                     <div class="row mb-4">
                         <div class="col-md-3 col-6 mb-2">
@@ -173,5 +234,136 @@
     border-color: #bbdefb;
     color: #0d47a1;
 }
+
+/* Star Rating Styles */
+.star-rating {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star-option {
+    cursor: pointer;
+    font-size: 2.5rem;
+    color: #ddd;
+    transition: color 0.2s;
+    user-select: none;
+    display: inline-block;
+    margin: 0 3px;
+    line-height: 1;
+}
+
+.star-option:hover {
+    color: #ffc107;
+}
+
+.star-option.selected {
+    color: #ffc107;
+}
+
+.rating-display {
+    display: flex;
+    gap: 2px;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const starOptions = document.querySelectorAll('.star-option');
+    const selectedRatingInput = document.getElementById('selectedRating');
+    const ratingText = document.getElementById('ratingText');
+    const rateButton = document.getElementById('rateButton');
+    
+    // Rating text options
+    const ratingTexts = {
+        1: '{{ _("Poor") }}',
+        2: '{{ _("Fair") }}',
+        3: '{{ _("Good") }}',
+        4: '{{ _("Very Good") }}',
+        5: '{{ _("Excellent") }}'
+    };
+    
+    let currentRating = 0;
+    
+    // Make star rating interactive
+    starOptions.forEach((star, index) => {
+        const rating = index + 1;
+        
+        star.addEventListener('click', function() {
+            currentRating = rating;
+            selectedRatingInput.value = rating;
+            updateRatingDisplay(rating);
+        });
+        
+        // Hover effects
+        star.addEventListener('mouseenter', function() {
+            highlightStars(rating);
+        });
+    });
+    
+    // Add hover effect to the container
+    const starRating = document.getElementById('starRating');
+    starRating.addEventListener('mouseleave', function() {
+        // Reset to current selection
+        if (currentRating > 0) {
+            updateRatingDisplay(currentRating);
+        } else {
+            resetStars();
+        }
+    });
+    
+    function updateRatingDisplay(rating) {
+        // Update star colors
+        highlightStars(rating);
+        
+        // Update text
+        if (ratingText) {
+            ratingText.textContent = ratingTexts[rating] || '{{ _("Click a star to rate") }}';
+        }
+        
+        // Enable button
+        if (rateButton) {
+            rateButton.disabled = false;
+        }
+    }
+    
+    function highlightStars(rating) {
+        starOptions.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+                star.classList.add('selected');
+            } else {
+                star.style.color = '#ddd';
+                star.classList.remove('selected');
+            }
+        });
+    }
+    
+    function resetStars() {
+        starOptions.forEach((star) => {
+            star.style.color = '#ddd';
+            star.classList.remove('selected');
+        });
+        if (ratingText) {
+            ratingText.textContent = '{{ _("Click a star to rate") }}';
+        }
+        if (rateButton) {
+            rateButton.disabled = true;
+        }
+        selectedRatingInput.value = '';
+        currentRating = 0;
+    }
+    
+    // Initialize display if there's already a rating
+    {% if user_rating %}
+    currentRating = {{ user_rating }};
+    selectedRatingInput.value = {{ user_rating }};
+    updateRatingDisplay({{ user_rating }});
+    {% endif %}
+});
+</script>
 {% endblock %}

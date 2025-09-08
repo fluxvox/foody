@@ -2,19 +2,19 @@
 
 {% block content %}
     <h1>{{ _('Search Results') }}</h1>
-    {% for post in posts %}
-        {% include '_post.html' %}
+    {% for recipe in recipes %}
+        {% include '_recipe.html' %}
     {% endfor %}
-    <nav aria-label="Post navigation">
+    <nav aria-label="Recipe navigation">
         <ul class="pagination">
             <li class="page-item{% if not prev_url %} disabled{% endif %}">
                 <a class="page-link" href="{{ prev_url }}">
-                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
+                    <span aria-hidden="true">&larr;</span> {{ _('Newer recipes') }}
                 </a>
             </li>
             <li class="page-item{% if not next_url %} disabled{% endif %}">
                 <a class="page-link" href="{{ next_url }}">
-                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
+                    {{ _('Older recipes') }} <span aria-hidden="true">&rarr;</span>
                 </a>
             </li>
         </ul>
