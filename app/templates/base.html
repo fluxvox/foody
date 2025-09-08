@@ -8,6 +8,7 @@
     {% else %}
     <title>{{ _('Welcome to Foody') }}</title>
     {% endif %}
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -136,6 +137,15 @@
             transform: translateY(-1px);
         }
         
+        /* Logo Styles */
+        .navbar-brand img {
+            transition: transform 0.3s ease;
+        }
+        
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 991px) {
             .search-input {
@@ -147,13 +157,25 @@
                 display: block;
                 text-align: center;
             }
+            
+            .navbar-brand img {
+                height: 35px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .navbar-brand img {
+                height: 30px;
+            }
         }
     </style>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">Foody</a>
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+            <img src="{{ url_for('static', filename='foody-logo.png') }}" alt="Foody" height="40" class="d-inline-block align-text-top">
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
