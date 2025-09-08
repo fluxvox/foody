@@ -20,8 +20,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install gunicorn[gevent] pymysql cryptography
+    pip install -r requirements.txt
 
 # Production stage
 FROM python:3.11-slim as production
