@@ -118,7 +118,35 @@
             <a href="{{ url_for('main.edit_recipe', id=recipe.id) }}" class="btn btn-warning btn-sm me-2">
                 <i class="fas fa-edit"></i> {{ _('Edit') }}
             </a>
+            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ recipe.id }}">
+                <i class="fas fa-trash"></i> {{ _('Delete') }}
+            </button>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+{% if recipe.author == current_user %}
+<div class="modal fade" id="deleteModal{{ recipe.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ recipe.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ recipe.id }}">{{ _('Delete Recipe') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _('Are you sure you want to delete this recipe?') }}</p>
+                <p><strong>{{ recipe.title }}</strong></p>
+                <p class="text-danger"><small>{{ _('This action cannot be undone.') }}</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                <form method="POST" action="{{ url_for('main.delete_recipe', id=recipe.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">{{ _('Delete Recipe') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
