@@ -48,6 +48,93 @@
             display: flex;
             align-items: center;
         }
+        
+        /* Navigation Button Styles */
+        .nav-button {
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none !important;
+        }
+        
+        .nav-button:hover {
+            border-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+        }
+        
+        .nav-button-primary {
+            background-color: #007bff;
+            color: white !important;
+            border-color: #007bff;
+        }
+        
+        .nav-button-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        /* Search Bar Styles */
+        .search-input {
+            border-radius: 20px 0 0 20px !important;
+            border: 2px solid #e9ecef;
+            padding: 8px 16px;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .input-group .btn {
+            border-radius: 0 20px 20px 0 !important;
+            border: 2px solid #e9ecef;
+            border-left: none;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group .btn:hover {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+        
+        /* User Profile Styles */
+        .user-profile {
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 6px 12px !important;
+            transition: all 0.3s ease;
+        }
+        
+        .user-profile:hover {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .search-input {
+                min-width: 150px;
+            }
+            
+            .nav-button {
+                margin: 2px 0;
+                display: block;
+                text-align: center;
+            }
+        }
     </style>
   </head>
   <body>
@@ -60,50 +147,61 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('main.index') }}">{{ _('All Recipes') }}</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('main.following') }}">{{ _('Following') }}</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('main.share_recipe') }}">
-                <i class="fas fa-plus"></i> {{ _('Share Recipe') }}
+              <a class="nav-link nav-button" aria-current="page" href="{{ url_for('main.index') }}">
+                <i class="fas fa-home me-1"></i>{{ _('All Recipes') }}
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link nav-button" aria-current="page" href="{{ url_for('main.following') }}">
+                <i class="fas fa-users me-1"></i>{{ _('Following') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-button nav-button-primary" aria-current="page" href="{{ url_for('main.share_recipe') }}">
+                <i class="fas fa-plus me-1"></i>{{ _('Share Recipe') }}
+              </a>
+            </li>
+          </ul>
+          <div class="d-flex align-items-center">
             {% if g.search_form %}
-            <form class="navbar-form navbar-left" method="get" action="{{ url_for('main.search') }}">
-                <div class="form-group">
-                    {{ g.search_form.q(size=20, class='form-control', placeholder=_('Search recipes, ingredients...')) }}
+            <form class="navbar-form me-3" method="get" action="{{ url_for('main.search') }}">
+                <div class="input-group">
+                    {{ g.search_form.q(size=20, class='form-control search-input', placeholder=_('Search recipes...')) }}
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </form>
             {% endif %}
-          </ul>
-          <ul class="navbar-nav mb-2 mb-lg-0">
-            {% if current_user.is_anonymous %}
-            <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="{{ url_for('auth.login') }}">{{ _('Login') }}</a>
-            </li>
-            {% else %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="{{ current_user.avatar(32) }}" class="rounded-circle me-2" alt="{{ current_user.username }}">
-                <span>{{ current_user.username }}</span>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="{{ url_for('main.user', username=current_user.username) }}">
-                  <i class="fas fa-user me-2"></i>{{ _('My Profile') }}
-                </a></li>
-                <li><a class="dropdown-item" href="{{ url_for('main.edit_profile') }}">
-                  <i class="fas fa-edit me-2"></i>{{ _('Edit Profile') }}
-                </a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                  <i class="fas fa-sign-out-alt me-2"></i>{{ _('Logout') }}
-                </a></li>
-              </ul>
-            </li>
-            {% endif %}
-          </ul>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+              {% if current_user.is_anonymous %}
+              <li class="nav-item">
+                <a class="nav-link nav-button" aria-current="page" href="{{ url_for('auth.login') }}">
+                  <i class="fas fa-sign-in-alt me-1"></i>{{ _('Login') }}
+                </a>
+              </li>
+              {% else %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center user-profile" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src="{{ current_user.avatar(32) }}" class="rounded-circle me-2" alt="{{ current_user.username }}">
+                  <span>{{ current_user.username }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="{{ url_for('main.user', username=current_user.username) }}">
+                    <i class="fas fa-user me-2"></i>{{ _('My Profile') }}
+                  </a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('main.edit_profile') }}">
+                    <i class="fas fa-edit me-2"></i>{{ _('Edit Profile') }}
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>{{ _('Logout') }}
+                  </a></li>
+                </ul>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
       </div>
     </nav>
