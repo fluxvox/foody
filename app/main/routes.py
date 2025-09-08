@@ -8,8 +8,8 @@ import json
 from langdetect import detect, LangDetectException
 from app import db
 from app.main.forms import EditProfileForm, EmptyForm, PostForm, RecipeForm, SearchForm, \
-    MessageForm
-from app.models import User, Post, Recipe, Message, Notification, Rating
+    MessageForm, CommentForm
+from app.models import User, Post, Recipe, Message, Notification, Rating, Comment
 from app.translate import translate
 from app.main import bp
 
