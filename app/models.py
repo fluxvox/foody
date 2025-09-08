@@ -128,6 +128,8 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
         foreign_keys='Message.recipient_id', back_populates='recipient')
     ratings: so.WriteOnlyMapped['Rating'] = so.relationship(
         back_populates='user')
+    comments: so.WriteOnlyMapped['Comment'] = so.relationship(
+        back_populates='author')
     notifications: so.WriteOnlyMapped['Notification'] = so.relationship(
         back_populates='user')
     tasks: so.WriteOnlyMapped['Task'] = so.relationship(back_populates='user')
@@ -313,6 +315,8 @@ class Recipe(SearchableMixin, db.Model):
     author: so.Mapped[User] = so.relationship(back_populates='recipes')
     ratings: so.WriteOnlyMapped['Rating'] = so.relationship(
         back_populates='recipe', cascade='all, delete-orphan')
+    comments: so.WriteOnlyMapped['Comment'] = so.relationship(
+        back_populates='recipe', cascade='all, delete-orphan')
 
     def __repr__(self):
         return '<Recipe {}>'.format(self.title)
@@ -369,6 +373,25 @@ class Recipe(SearchableMixin, db.Model):
         rating = db.session.scalar(sa.select(Rating.rating).where(
             sa.and_(Rating.recipe_id == self.id, Rating.user_id == user.id)))
         return rating
+
+
+class Message(db.Model):
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    sender_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                                 index=True)
+    recipient_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                                    index=True)
+    body: so.Mapped[str] = so.mapped_column(sa.String(500))
+    timestamp: so.Mapped[datetime] = so.mapped_column(
+        index=True, default=lambda: datetime.now(timezone.utc))
+
+    author: so.Mapped[User] = so.relationship(
+        foreign_keys='Message.sender_id', back_populates='messages_sent')
+    recipient: so.Mapped[User] = so.relationship(
+        foreign_keys='Message.recipient_id', back_populates='messages_received')
+
+    def __repr__(self):
+        return '<Message {}>'.format(self.body)
 
 
 # Keep Post model for backward compatibility, but alias it to Recipe
