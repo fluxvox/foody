@@ -19,7 +19,7 @@
     
     {% if recipe.image_url %}
     <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}">
-        <img src="{{ recipe.image_url }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 200px; object-fit: cover;">
+        <img src="{{ recipe.image_url }}" class="card-img-top" alt="{{ recipe.title }}" style="height: 250px; object-fit: cover;">
     </a>
     {% endif %}
     
@@ -69,7 +69,13 @@
         </div>
         
         {% if recipe.description %}
-        <p class="card-text">{{ recipe.description }}</p>
+        <p class="card-text">
+            {% if recipe.description|length > 120 %}
+                {{ recipe.description[:120] }}...
+            {% else %}
+                {{ recipe.description }}
+            {% endif %}
+        </p>
         {% endif %}
         
         <div class="row mb-3">
@@ -103,45 +109,6 @@
             {% endif %}
         </div>
         
-        <div class="accordion" id="recipeAccordion{{ recipe.id }}">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="ingredientsHeader{{ recipe.id }}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ingredients{{ recipe.id }}" aria-expanded="false" aria-controls="ingredients{{ recipe.id }}">
-                        <i class="fas fa-list me-2"></i>Ingredients
-                    </button>
-                </h2>
-                <div id="ingredients{{ recipe.id }}" class="accordion-collapse collapse" aria-labelledby="ingredientsHeader{{ recipe.id }}" data-bs-parent="#recipeAccordion{{ recipe.id }}">
-                    <div class="accordion-body">
-                        <ul class="list-unstyled">
-                            {% for ingredient in recipe.get_ingredients_list() %}
-                                <li class="mb-1">
-                                    <i class="fas fa-circle text-primary me-2" style="font-size: 0.5em;"></i>
-                                    {% if ingredient.amount or ingredient.unit %}
-                                        <strong>{{ ingredient.amount }} {{ ingredient.unit }}</strong>
-                                        {% if ingredient.ingredient %} {{ ingredient.ingredient }}{% endif %}
-                                    {% else %}
-                                        {{ ingredient.ingredient }}
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="instructionsHeader{{ recipe.id }}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instructions{{ recipe.id }}" aria-expanded="false" aria-controls="instructions{{ recipe.id }}">
-                        <i class="fas fa-clipboard-list me-2"></i>Instructions
-                    </button>
-                </h2>
-                <div id="instructions{{ recipe.id }}" class="accordion-collapse collapse" aria-labelledby="instructionsHeader{{ recipe.id }}" data-bs-parent="#recipeAccordion{{ recipe.id }}">
-                    <div class="accordion-body">
-                        <div class="instructions-text">{{ recipe.instructions | replace('\n', '<br>') | safe }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <div class="mt-3">
             <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-primary btn-sm me-2">
