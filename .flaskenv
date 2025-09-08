@@ -1,2 +1,2 @@
-FLASK_APP=microblog.py
+FLASK_APP=foody.py
 FLASK_DEBUG=1
