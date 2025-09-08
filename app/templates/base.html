@@ -101,12 +101,20 @@
             border-left: none;
             padding: 8px 12px;
             transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            color: #6c757d;
         }
         
         .input-group .btn:hover {
             background-color: #007bff;
             border-color: #007bff;
             color: white;
+            transform: scale(1.05);
+        }
+        
+        .input-group .btn i {
+            font-size: 1.1em;
+            font-weight: 600;
         }
         
         /* User Profile Styles */
@@ -167,7 +175,7 @@
             <form class="navbar-form me-3" method="get" action="{{ url_for('main.search') }}">
                 <div class="input-group">
                     {{ g.search_form.q(size=20, class='form-control search-input', placeholder=_('Search recipes...')) }}
-                    <button class="btn btn-outline-secondary" type="submit">
+                    <button class="btn btn-outline-secondary" type="submit" title="{{ _('Search recipes') }}">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
