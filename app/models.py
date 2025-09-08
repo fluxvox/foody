@@ -293,7 +293,7 @@ def load_user(id):
     return db.session.get(User, int(id))
 
 
-class Recipe(SearchableMixin, db.Model):
+class Recipe(SearchableMixin, PaginatedAPIMixin, db.Model):
     __searchable__ = ['title', 'description', 'ingredients', 'instructions']
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     title: so.Mapped[str] = so.mapped_column(sa.String(100), index=True)

@@ -8,7 +8,6 @@ from app.api.errors import bad_request
 
 
 @bp.route('/recipes', methods=['GET'])
-@token_auth.login_required
 def get_recipes():
     """Get paginated list of recipes"""
     page = request.args.get('page', 1, type=int)
@@ -38,7 +37,6 @@ def get_recipes():
 
 
 @bp.route('/recipes/<int:id>', methods=['GET'])
-@token_auth.login_required
 def get_recipe(id):
     """Get specific recipe by ID"""
     recipe = db.get_or_404(Recipe, id)
@@ -112,7 +110,6 @@ def delete_recipe(id):
 
 
 @bp.route('/recipes/search', methods=['GET'])
-@token_auth.login_required
 def search_recipes():
     """Search recipes by title, description, ingredients, or instructions"""
     query = request.args.get('q', '')
@@ -159,7 +156,6 @@ def search_recipes():
 
 
 @bp.route('/recipes/<int:id>/ratings', methods=['GET'])
-@token_auth.login_required
 def get_recipe_ratings(id):
     """Get all ratings for a specific recipe"""
     recipe = db.get_or_404(Recipe, id)
@@ -221,7 +217,6 @@ def delete_recipe_rating(id):
 
 
 @bp.route('/recipes/categories', methods=['GET'])
-@token_auth.login_required
 def get_recipe_categories():
     """Get list of available recipe categories"""
     categories = db.session.scalars(
@@ -235,7 +230,6 @@ def get_recipe_categories():
 
 
 @bp.route('/recipes/difficulties', methods=['GET'])
-@token_auth.login_required
 def get_recipe_difficulties():
     """Get list of available recipe difficulties"""
     difficulties = db.session.scalars(
