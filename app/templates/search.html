@@ -2,19 +2,30 @@
 
 {% block content %}
     <h1>{{ _('Search Results') }}</h1>
-    {% for post in posts %}
-        {% include '_post.html' %}
-    {% endfor %}
-    <nav aria-label="Post navigation">
+    {% if recipes %}
+        <p class="text-muted mb-3">
+            <i class="fas fa-search me-2"></i>
+            {{ _('Found %(count)d recipe(s) matching "%(query)s"', count=recipes|length, query=request.args.get('q', '')) }}
+        </p>
+        {% for recipe in recipes %}
+            {% include '_recipe.html' %}
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-search me-2"></i>
+            {{ _('No recipes found matching "%(query)s". Try different keywords or check your spelling.', query=request.args.get('q', '')) }}
+        </div>
+    {% endif %}
+    <nav aria-label="Recipe navigation">
         <ul class="pagination">
             <li class="page-item{% if not prev_url %} disabled{% endif %}">
                 <a class="page-link" href="{{ prev_url }}">
-                    <span aria-hidden="true">&larr;</span> {{ _('Newer posts') }}
+                    <span aria-hidden="true">&larr;</span> {{ _('Newer recipes') }}
                 </a>
             </li>
             <li class="page-item{% if not next_url %} disabled{% endif %}">
                 <a class="page-link" href="{{ next_url }}">
-                    {{ _('Older posts') }} <span aria-hidden="true">&rarr;</span>
+                    {{ _('Older recipes') }} <span aria-hidden="true">&rarr;</span>
                 </a>
             </li>
         </ul>
