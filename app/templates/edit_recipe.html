@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Back Button -->
+            <div class="mb-3">
+                <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> {{ _('Back to Recipe') }}
+                </a>
+            </div>
+
+            <!-- Edit Recipe Card -->
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>{{ _('Edit Recipe') }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Recipe Title -->
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control") }}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="2") }}
+                        </div>
+
+                        <!-- Ingredients Section -->
+                        <div class="mb-3">
+                            {{ form.ingredients.label(class="form-label") }}
+                            {{ form.ingredients(class="form-control", rows="6", placeholder=_("Example:\n2 cups flour\n1 tsp salt\n1/2 cup butter\n3 eggs")) }}
+                            <small class="form-text text-muted">{{ _('Enter one ingredient per line. Format: amount unit ingredient (e.g., "2 cups flour")') }}</small>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="mb-3">
+                            {{ form.instructions.label(class="form-label") }}
+                            {{ form.instructions(class="form-control", rows="4") }}
+                        </div>
+
+                        <!-- Recipe Details -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                {{ form.prep_time.label(class="form-label") }}
+                                {{ form.prep_time(class="form-control") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.cook_time.label(class="form-label") }}
+                                {{ form.cook_time(class="form-control") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.servings.label(class="form-label") }}
+                                {{ form.servings(class="form-control") }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.difficulty.label(class="form-label") }}
+                                {{ form.difficulty(class="form-select") }}
+                            </div>
+                        </div>
+
+                        <!-- Category and Image -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.image_url.label(class="form-label") }}
+                                {{ form.image_url(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save"></i> {{ _('Update Recipe') }}
+                            </button>
+                            <a href="{{ url_for('main.recipe_detail', id=recipe.id) }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times"></i> {{ _('Cancel') }}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recipe Info -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>{{ _('Recipe Information') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>{{ _('Created') }}:</strong> {{ moment(recipe.timestamp).format('LLL') }}</p>
+                            <p class="mb-1"><strong>{{ _('Author') }}:</strong> {{ recipe.author.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>{{ _('Last Modified') }}:</strong> {{ moment(recipe.timestamp).fromNow() }}</p>
+                            <p class="mb-0"><strong>{{ _('Recipe ID') }}:</strong> #{{ recipe.id }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.card-header.bg-warning {
+    border-radius: 15px 15px 0 0;
+    background-color: #ffc107 !important;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+</style>
+{% endblock %}

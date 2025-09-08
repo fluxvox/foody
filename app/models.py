@@ -110,8 +110,11 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
         sa.String(32), index=True, unique=True)
     token_expiration: so.Mapped[Optional[datetime]]
 
-    posts: so.WriteOnlyMapped['Post'] = so.relationship(
+    recipes: so.WriteOnlyMapped['Recipe'] = so.relationship(
         back_populates='author')
+    # Keep posts for backward compatibility
+    posts: so.WriteOnlyMapped['Recipe'] = so.relationship(
+        back_populates='author', overlaps="recipes")
     following: so.WriteOnlyMapped['User'] = so.relationship(
         secondary=followers, primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
@@ -163,20 +166,24 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
             self.following.select().subquery())
         return db.session.scalar(query)
 
-    def following_posts(self):
+    def following_recipes(self):
         Author = so.aliased(User)
         Follower = so.aliased(User)
         return (
-            sa.select(Post)
-            .join(Post.author.of_type(Author))
+            sa.select(Recipe)
+            .join(Recipe.author.of_type(Author))
             .join(Author.followers.of_type(Follower), isouter=True)
             .where(sa.or_(
                 Follower.id == self.id,
                 Author.id == self.id,
             ))
-            .group_by(Post)
-            .order_by(Post.timestamp.desc())
+            .group_by(Recipe)
+            .order_by(Recipe.timestamp.desc())
         )
+
+    def following_posts(self):
+        """Backward compatibility - returns recipes"""
+        return self.following_recipes()
 
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
@@ -223,10 +230,14 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
                                           Task.complete == False)
         return db.session.scalar(query)
 
-    def posts_count(self):
+    def recipes_count(self):
         query = sa.select(sa.func.count()).select_from(
-            self.posts.select().subquery())
+            self.recipes.select().subquery())
         return db.session.scalar(query)
+
+    def posts_count(self):
+        """Backward compatibility - returns recipe count"""
+        return self.recipes_count()
 
     def to_dict(self, include_email=False):
         data = {
@@ -235,7 +246,8 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
             'last_seen': self.last_seen.replace(
                 tzinfo=timezone.utc).isoformat(),
             'about_me': self.about_me,
-            'post_count': self.posts_count(),
+            'recipe_count': self.recipes_count(),
+            'post_count': self.posts_count(),  # Backward compatibility
             'follower_count': self.followers_count(),
             'following_count': self.following_count(),
             '_links': {
@@ -284,20 +296,67 @@ def load_user(id):
     return db.session.get(User, int(id))
 
 
-class Post(SearchableMixin, db.Model):
-    __searchable__ = ['body']
+class Recipe(SearchableMixin, db.Model):
+    __searchable__ = ['title', 'description', 'ingredients', 'instructions']
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    body: so.Mapped[str] = so.mapped_column(sa.String(140))
+    title: so.Mapped[str] = so.mapped_column(sa.String(100), index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
+    ingredients: so.Mapped[str] = so.mapped_column(sa.Text)  # JSON string for structured ingredients
+    instructions: so.Mapped[str] = so.mapped_column(sa.Text)
+    prep_time: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer)  # in minutes
+    cook_time: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer)  # in minutes
+    servings: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer)
+    difficulty: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20))  # Easy, Medium, Hard
+    category: so.Mapped[Optional[str]] = so.mapped_column(sa.String(50))  # Breakfast, Lunch, Dinner, Dessert, etc.
+    image_url: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200))
     timestamp: so.Mapped[datetime] = so.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc))
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
                                                index=True)
     language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(5))
 
-    author: so.Mapped[User] = so.relationship(back_populates='posts')
+    author: so.Mapped[User] = so.relationship(back_populates='recipes')
 
     def __repr__(self):
-        return '<Post {}>'.format(self.body)
+        return '<Recipe {}>'.format(self.title)
+
+    def total_time(self):
+        """Calculate total time (prep + cook) in minutes"""
+        prep = self.prep_time or 0
+        cook = self.cook_time or 0
+        return prep + cook
+
+    def formatted_time(self, minutes):
+        """Format time in minutes to human readable format"""
+        if not minutes:
+            return "Not specified"
+        hours = minutes // 60
+        mins = minutes % 60
+        if hours > 0:
+            return f"{hours}h {mins}m" if mins > 0 else f"{hours}h"
+        return f"{mins}m"
+
+    def get_ingredients_list(self):
+        """Parse ingredients JSON and return list of ingredient dictionaries"""
+        try:
+            return json.loads(self.ingredients) if self.ingredients else []
+        except (json.JSONDecodeError, TypeError):
+            # Fallback for old format (plain text)
+            return [{"amount": "", "unit": "", "ingredient": self.ingredients}] if self.ingredients else []
+
+    def set_ingredients_list(self, ingredients_list):
+        """Set ingredients from list of ingredient dictionaries"""
+        self.ingredients = json.dumps(ingredients_list)
+
+    def get_ingredients_text(self):
+        """Get ingredients as formatted text for search"""
+        ingredients_list = self.get_ingredients_list()
+        return " ".join([f"{ing.get('amount', '')} {ing.get('unit', '')} {ing.get('ingredient', '')}".strip() 
+                        for ing in ingredients_list])
+
+
+# Keep Post model for backward compatibility, but alias it to Recipe
+Post = Recipe
 
 
 class Message(db.Model):
