@@ -8,7 +8,7 @@ import json
 from langdetect import detect, LangDetectException
 from app import db
 from app.main.forms import EditProfileForm, EmptyForm, PostForm, RecipeForm, SearchForm, \
-    MessageForm, CommentForm
+    MessageForm, CommentForm, ChangePasswordForm, ChangeEmailForm
 from app.models import User, Post, Recipe, Message, Notification, Rating, Comment
 from app.translate import translate
 from app.main import bp
@@ -299,17 +299,40 @@ def user_popup(username):
 @login_required
 def edit_profile():
     form = EditProfileForm(current_user.username)
+    password_form = ChangePasswordForm(current_user)
+    email_form = ChangeEmailForm(current_user)
+    
+    # Handle profile update
     if form.validate_on_submit():
         current_user.username = form.username.data
         current_user.about_me = form.about_me.data
         db.session.commit()
-        flash(_('Your changes have been saved.'))
+        flash(_('Your profile has been updated.'))
         return redirect(url_for('main.edit_profile'))
-    elif request.method == 'GET':
+    
+    # Handle password change
+    if password_form.validate_on_submit():
+        from werkzeug.security import generate_password_hash
+        current_user.set_password(password_form.new_password.data)
+        db.session.commit()
+        flash(_('Your password has been changed.'))
+        return redirect(url_for('main.edit_profile'))
+    
+    # Handle email change
+    if email_form.validate_on_submit():
+        current_user.email = email_form.new_email.data
+        db.session.commit()
+        flash(_('Your email has been changed.'))
+        return redirect(url_for('main.edit_profile'))
+    
+    # Pre-populate forms on GET request
+    if request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
+        email_form.new_email.data = current_user.email
+    
     return render_template('edit_profile.html', title=_('Edit Profile'),
-                           form=form)
+                           form=form, password_form=password_form, email_form=email_form)
 
 
 @bp.route('/follow/<username>', methods=['POST'])

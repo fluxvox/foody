@@ -2,6 +2,184 @@
 {% import "bootstrap_wtf.html" as wtf %}
 
 {% block content %}
-    <h1>{{ _('Edit Profile') }}</h1>
-    {{ wtf.quick_form(form) }}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4">
+                <i class="fas fa-user-edit me-2"></i>{{ _('Edit Profile') }}
+            </h1>
+
+            <!-- Profile Information Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>{{ _('Profile Information') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control") }}
+                            {% if form.username.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.username.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.about_me.label(class="form-label") }}
+                            {{ form.about_me(class="form-control", rows="3") }}
+                            <small class="form-text text-muted">{{ _('Tell us a bit about yourself (max 140 characters)') }}</small>
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-success") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock me-2"></i>{{ _('Change Password') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ password_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ password_form.current_password.label(class="form-label") }}
+                            {{ password_form.current_password(class="form-control") }}
+                            {% if password_form.current_password.errors %}
+                                <div class="text-danger">
+                                    {% for error in password_form.current_password.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ password_form.new_password.label(class="form-label") }}
+                            {{ password_form.new_password(class="form-control") }}
+                            <small class="form-text text-muted">{{ _('Password must be at least 8 characters long') }}</small>
+                            {% if password_form.new_password.errors %}
+                                <div class="text-danger">
+                                    {% for error in password_form.new_password.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ password_form.new_password2.label(class="form-label") }}
+                            {{ password_form.new_password2(class="form-control") }}
+                            {% if password_form.new_password2.errors %}
+                                <div class="text-danger">
+                                    {% for error in password_form.new_password2.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            {{ password_form.submit(class="btn btn-warning") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Email Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>{{ _('Change Email') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ email_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ _('Current Email') }}</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ email_form.new_email.label(class="form-label") }}
+                            {{ email_form.new_email(class="form-control") }}
+                            {% if email_form.new_email.errors %}
+                                <div class="text-danger">
+                                    {% for error in email_form.new_email.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ email_form.password.label(class="form-label") }}
+                            {{ email_form.password(class="form-control") }}
+                            <small class="form-text text-muted">{{ _('Enter your current password to confirm the email change') }}</small>
+                            {% if email_form.password.errors %}
+                                <div class="text-danger">
+                                    {% for error in email_form.password.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            {{ email_form.submit(class="btn btn-info") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center">
+                <a href="{{ url_for('main.user', username=current_user.username) }}" class="btn btn-outline-success">
+                    <i class="fas fa-arrow-left me-2"></i>{{ _('Back to Profile') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+</style>
 {% endblock %}
