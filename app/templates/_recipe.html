@@ -119,15 +119,6 @@
                 <i class="fas fa-edit"></i> {{ _('Edit') }}
             </a>
             {% endif %}
-            {% if recipe.language and recipe.language != g.locale %}
-            <a href="javascript:translate(
-                        'recipe{{ recipe.id }}',
-                        'translation{{ recipe.id }}',
-                        '{{ recipe.language }}',
-                        '{{ g.locale }}');" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-language"></i> {{ _('Translate') }}
-            </a>
-            {% endif %}
         </div>
     </div>
 </div>
