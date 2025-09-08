@@ -347,6 +347,35 @@
             color: #28a745;
         }
         
+        /* Enhanced Button Styles */
+        .btn-outline-success {
+            border: 2px solid #28a745;
+            color: #28a745;
+            background-color: transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        
+        .btn-outline-success:hover {
+            background-color: #28a745;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-outline-success:focus {
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .btn-outline-success i {
+            transition: transform 0.3s ease;
+        }
+        
+        .btn-outline-success:hover i {
+            transform: scale(1.1);
+        }
+        
         /* Responsive adjustments for cookie banner */
         @media (max-width: 768px) {
             .cookie-content {
