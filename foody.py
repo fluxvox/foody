@@ -1,3 +1,10 @@
+# Fix MySQL driver issue
+try:
+    import pymysql
+    pymysql.install_as_MySQLdb()
+except ImportError:
+    pass
+
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from app import create_app, db

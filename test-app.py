@@ -8,6 +8,15 @@ import os
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Fix MySQL driver issue
+try:
+    import pymysql
+    pymysql.install_as_MySQLdb()
+    print("✅ MySQLdb monkey-patch applied!")
+except ImportError:
+    print("❌ PyMySQL not found. Please install it with: pip install PyMySQL")
+    sys.exit(1)
+
 try:
     print("🧪 Testing Foody application...")
     
