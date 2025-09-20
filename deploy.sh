@@ -43,18 +43,18 @@ fi
 
 # Stop existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose down --remove-orphans
+docker compose down --remove-orphans
 
 # Build and start services
 echo "🔨 Building and starting services..."
-docker-compose up --build -d
+docker compose up --build -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be healthy..."
 timeout=300
 elapsed=0
 while [ $elapsed -lt $timeout ]; do
-    if docker-compose ps | grep -q "healthy"; then
+    if docker compose ps | grep -q "healthy"; then
         echo "✅ Services are healthy"
         break
     fi
@@ -65,7 +65,7 @@ done
 
 if [ $elapsed -ge $timeout ]; then
     echo "❌ Timeout waiting for services to be healthy"
-    docker-compose logs
+    docker compose logs
     exit 1
 fi
 
@@ -75,7 +75,7 @@ if curl -f http://localhost/health > /dev/null 2>&1; then
     echo "✅ Application is healthy and responding"
 else
     echo "❌ Application health check failed"
-    docker-compose logs web
+    docker compose logs web
     exit 1
 fi
 
@@ -88,11 +88,11 @@ echo "  - Health Check: https://localhost/health"
 echo "  - API Base URL: https://localhost/api"
 echo ""
 echo "📊 Container Status:"
-docker-compose ps
+docker compose ps
 echo ""
 echo "📝 Useful Commands:"
-echo "  - View logs: docker-compose logs -f"
-echo "  - Stop services: docker-compose down"
-echo "  - Restart services: docker-compose restart"
-echo "  - Update application: docker-compose up --build -d"
+echo "  - View logs: docker compose logs -f"
+echo "  - Stop services: docker compose down"
+echo "  - Restart services: docker compose restart"
+echo "  - Update application: docker compose up --build -d"
 

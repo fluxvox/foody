@@ -144,6 +144,7 @@ services:
       - ./deployment/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./deployment/nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
+      - ./app/static:/app/static:ro
     depends_on:
       - web
     networks:
