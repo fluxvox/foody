@@ -97,7 +97,7 @@
             </div>
             
             <div style="text-align: center;">
-                <a href="{{ url_for('main.recipe_detail', id=recipe.id, _external=True) }}" class="cta-button">
+                <a href="https://lab10.ifalabs.org/recipe/{{ recipe.id }}" class="cta-button">
                     View Recipe 🍳
                 </a>
             </div>
@@ -109,7 +109,7 @@
     
     <div class="footer">
         <p>You received this email because {{ sender_name }} shared a recipe with you.</p>
-        <p>Visit Foody: {{ url_for('main.index', _external=True) }}</p>
+        <p>Visit Foody: https://lab10.ifalabs.org</p>
         <p>&copy; 2024 Foody. All rights reserved.</p>
     </div>
 </body>

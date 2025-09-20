@@ -12,7 +12,7 @@ Recipe Details:
 - Servings: {{ recipe.servings }}
 - Rating: {{ recipe.average_rating() if recipe.average_rating() else 'No ratings yet' }}
 
-View the full recipe: {{ url_for('main.recipe_detail', id=recipe.id, _external=True) }}
+View the full recipe: https://lab10.ifalabs.org/recipe/{{ recipe.id }}
 
 Happy cooking!
 
@@ -20,5 +20,5 @@ The Foody Team
 
 ---
 You received this email because {{ sender_name }} shared a recipe with you.
-Visit Foody: {{ url_for('main.index', _external=True) }}
+Visit Foody: https://lab10.ifalabs.org
 © 2024 Foody. All rights reserved.

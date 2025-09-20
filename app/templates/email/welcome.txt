@@ -8,7 +8,7 @@ Welcome to Foody! We're excited to have you join our community of food enthusias
 - Rate & Review: Help others find the best recipes with your ratings
 - Follow Chefs: Connect with other food lovers
 
-Start cooking: {{ url_for('main.index', _external=True) }}
+Start cooking: https://lab10.ifalabs.org
 
 Need help getting started? Check out our getting started guide or browse some popular recipes to get inspired!
 
@@ -18,5 +18,5 @@ The Foody Team
 
 ---
 You received this email because you signed up for Foody.
-Visit us: {{ url_for('main.index', _external=True) }}
+Visit us: https://lab10.ifalabs.org
 © 2024 Foody. All rights reserved.
