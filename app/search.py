@@ -1,6 +1,4 @@
 from flask import current_app
-from app import db
-from app.models import Recipe
 import sqlalchemy as sa
 
 
@@ -17,6 +15,10 @@ def remove_from_index(index, model):
 def query_index(index, query, page, per_page):
     # Fallback to database search when Elasticsearch is not available
     if index == 'recipe':
+        # Import here to avoid circular import
+        from app import db
+        from app.models import Recipe
+        
         # Use database LIKE search as fallback
         search_query = f"%{query}%"
         recipes = db.session.scalars(

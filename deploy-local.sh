@@ -67,10 +67,14 @@ sed -i 's|DATABASE_URL=.*|DATABASE_URL=mysql://foody:foody123@localhost:3306/foo
 
 # Initialize database
 echo "🗃️  Initializing database..."
+export FLASK_APP=foody.py
+export FLASK_ENV=production
 flask db upgrade
 
 # Create admin user
 echo "👤 Creating admin user..."
+export FLASK_APP=foody.py
+export FLASK_ENV=production
 flask shell << EOF
 from app.models import User
 from app import db
