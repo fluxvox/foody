@@ -1,0 +1,22 @@
+Dear {{ user.username }},
+
+Welcome to Foody! We're excited to have you join our community of food enthusiasts.
+
+🚀 Get Started:
+- Share Recipes: Upload your favorite recipes with photos and detailed instructions
+- Discover New Dishes: Browse recipes from our community
+- Rate & Review: Help others find the best recipes with your ratings
+- Follow Chefs: Connect with other food lovers
+
+Start cooking: {{ url_for('main.index', _external=True) }}
+
+Need help getting started? Check out our getting started guide or browse some popular recipes to get inspired!
+
+Happy cooking!
+
+The Foody Team
+
+---
+You received this email because you signed up for Foody.
+Visit us: {{ url_for('main.index', _external=True) }}
+© 2024 Foody. All rights reserved.

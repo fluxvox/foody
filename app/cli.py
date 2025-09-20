@@ -4,6 +4,9 @@ import click
 
 bp = Blueprint('cli', __name__, cli_group=None)
 
+# Import email commands
+from app.cli.email_commands import register_commands
+
 
 @bp.cli.group()
 def translate():
