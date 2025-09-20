@@ -22,11 +22,11 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=foody
 
-# Security settings (production ready)
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=true
+# Security settings (balanced for production)
+NoNewPrivileges=false
+PrivateTmp=false
+ProtectSystem=false
+ProtectHome=false
 ReadWritePaths=/home/student/foody/logs
 ReadWritePaths=/home/student/foody/instance
 ReadWritePaths=/home/student/foody/app.db
