@@ -1,0 +1,31 @@
+[Unit]
+Description=Foody Recipe Sharing Platform
+After=network.target mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=exec
+User=foody
+Group=foody
+WorkingDirectory=/opt/foody
+Environment=PATH=/opt/foody/venv/bin
+Environment=FLASK_APP=foody.py
+Environment=FLASK_ENV=production
+ExecStart=/opt/foody/venv/bin/gunicorn --bind 127.0.0.1:5000 --workers 2 --timeout 30 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 foody:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=foody
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/foody/logs
+ReadWritePaths=/opt/foody/instance
+
+[Install]
+WantedBy=multi-user.target
