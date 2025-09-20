@@ -14,7 +14,7 @@ Environment=FLASK_ENV=production
 Environment=SERVER_NAME=lab10.ifalabs.org
 Environment=LOG_TO_STDOUT=true
 EnvironmentFile=/home/student/foody/.env
-ExecStart=/home/student/foody/venv/bin/gunicorn --bind 127.0.0.1:5000 --workers 2 --timeout 30 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 foody:app
+ExecStart=/home/student/foody/venv/bin/gunicorn --config gunicorn.conf.py foody:app
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=always
 RestartSec=3
