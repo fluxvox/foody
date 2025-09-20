@@ -14,63 +14,6 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
-# Check if .env file exists
-if [ ! -f ".env" ]; then
-    echo "📝 Creating .env file from template..."
-    cp production.env.example .env
-    echo "⚠️  Please edit .env file with your configuration before continuing."
-    echo "   nano .env"
-    read -p "Press Enter when you have configured .env file..."
-fi
-
-# Update system packages
-echo "📦 Updating system packages..."
-sudo apt update && sudo apt upgrade -y
-
-# Install required packages
-echo "🔧 Installing required packages..."
-sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server
-
-# Create virtual environment
-echo "🐍 Setting up Python virtual environment..."
-python3 -m venv venv
-source venv/bin/activate
-
-# Install Python dependencies
-echo "📚 Installing Python dependencies..."
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Secure MariaDB installation
-echo "🗄️  Configuring MariaDB..."
-echo "You will be prompted to secure your MariaDB installation."
-echo "Please set a root password and follow the security recommendations."
-sudo mysql_secure_installation
-
-# Create database and user
-echo "📊 Setting up database..."
-echo "Please enter your MariaDB root password to create the database and user:"
-read -s -p "MariaDB root password: " MYSQL_ROOT_PASSWORD
-echo
-
-# Create database and user
-mysql -u root -p$MYSQL_ROOT_PASSWORD << EOF
-CREATE DATABASE IF NOT EXISTS foody CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'foody'@'localhost' IDENTIFIED BY 'foody123';
-GRANT ALL PRIVILEGES ON foody.* TO 'foody'@'localhost';
-FLUSH PRIVILEGES;
-EOF
-
-# Update .env with database URL
-echo "🔧 Updating database configuration..."
-sed -i 's|DATABASE_URL=.*|DATABASE_URL=mysql://foody:foody123@localhost:3306/foody|' .env
-
-# Initialize database
-echo "🗃️  Initializing database..."
-export FLASK_APP=foody.py
-export FLASK_ENV=production
-flask db upgrade
-
 # Create admin user
 echo "👤 Creating admin user..."
 export FLASK_APP=foody.py
