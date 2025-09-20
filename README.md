@@ -35,6 +35,7 @@ Foody is a modern recipe sharing platform that allows users to:
 - **Local Deployment**: Optimized for small servers (2GB RAM, 2 CPU cores)
 - **MariaDB Database**: Lightweight and efficient database solution
 - **Nginx + Gunicorn**: High-performance web server setup
+- **SSL/TLS Security**: Let's Encrypt certificates with auto-renewal
 - **Systemd Integration**: Automatic startup and service management
 
 ## 🚀 Quick Start
@@ -343,11 +344,10 @@ docker compose -f docker-compose.local.yml exec web flask db upgrade
 3. **SSL Configuration:**
    ```bash
    # Generate Let's Encrypt certificate
-   sudo certbot certonly --standalone -d yourdomain.com
+   ./setup-letsencrypt.sh
    
-   # Copy certificates
-   sudo cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem deployment/nginx/ssl/cert.pem
-   sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem deployment/nginx/ssl/key.pem
+   # Or manually:
+   sudo certbot certonly --standalone -d yourdomain.com
    ```
 
 ### Production Features
