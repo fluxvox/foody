@@ -1,0 +1,27 @@
+Welcome to Foody, {{ user.username }}! 🎉
+
+We're thrilled to have you join our community of food lovers and recipe enthusiasts!
+
+Your account is now ready! You can start exploring recipes, sharing your own creations, and connecting with fellow foodies right away.
+
+Here's what you can do on Foody:
+
+🍳 Share Recipes: Upload your favorite recipes with photos and detailed instructions
+🔍 Discover: Browse thousands of recipes from our community  
+⭐ Rate & Review: Share your thoughts on recipes you've tried
+👥 Connect: Follow other food enthusiasts and see their latest recipes
+💬 Comment: Engage with the community through comments and discussions
+
+Ready to get started?
+
+Visit Foody: {{ url_for('main.index', _external=True) }}
+
+Need help getting started? Check out our help section or feel free to reach out to our support team.
+
+Happy cooking!
+
+--
+The Foody Team
+Share your favorite recipes with the world
+
+This email was sent from Foody. If you didn't request this email, you can safely ignore it.

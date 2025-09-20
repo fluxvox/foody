@@ -1,10 +1,11 @@
 import sqlalchemy as sa
-from flask import request, url_for, abort
+from flask import request, url_for, abort, current_app
 from app import db
 from app.models import User
 from app.api import bp
 from app.api.auth import token_auth
 from app.api.errors import bad_request
+from app.auth.email import send_welcome_email
 
 
 @bp.route('/users/<int:id>', methods=['GET'])
@@ -57,6 +58,14 @@ def create_user():
     user.from_dict(data, new_user=True)
     db.session.add(user)
     db.session.commit()
+    
+    # Send welcome email to the new user
+    try:
+        send_welcome_email(user)
+    except Exception as e:
+        # Log the error but don't fail user creation if email fails
+        current_app.logger.error(f'Failed to send welcome email to {user.email}: {str(e)}')
+    
     return user.to_dict(), 201, {'Location': url_for('api.get_user',
                                                      id=user.id)}
 

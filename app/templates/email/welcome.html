@@ -1,0 +1,32 @@
+{% extends "email/base.html" %}
+
+{% block title %}Welcome to Foody!{% endblock %}
+
+{% block content %}
+<h2>Welcome to Foody, {{ user.username }}! 🎉</h2>
+
+<p>We're thrilled to have you join our community of food lovers and recipe enthusiasts!</p>
+
+<div class="highlight">
+    <p><strong>Your account is now ready!</strong> You can start exploring recipes, sharing your own creations, and connecting with fellow foodies right away.</p>
+</div>
+
+<h3>Here's what you can do on Foody:</h3>
+<ul>
+    <li><strong>🍳 Share Recipes:</strong> Upload your favorite recipes with photos and detailed instructions</li>
+    <li><strong>🔍 Discover:</strong> Browse thousands of recipes from our community</li>
+    <li><strong>⭐ Rate & Review:</strong> Share your thoughts on recipes you've tried</li>
+    <li><strong>👥 Connect:</strong> Follow other food enthusiasts and see their latest recipes</li>
+    <li><strong>💬 Comment:</strong> Engage with the community through comments and discussions</li>
+</ul>
+
+<p>Ready to get started?</p>
+
+<a href="{{ url_for('main.index', _external=True) }}" class="btn">Start Exploring Foody</a>
+
+<div class="divider"></div>
+
+<p><strong>Need help getting started?</strong> Check out our <a href="{{ url_for('main.index', _external=True) }}#help">help section</a> or feel free to reach out to our support team.</p>
+
+<p>Happy cooking!</p>
+{% endblock %}

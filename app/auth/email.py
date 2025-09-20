@@ -12,3 +12,13 @@ def send_password_reset_email(user):
                                          user=user, token=token),
                html_body=render_template('email/reset_password.html',
                                          user=user, token=token))
+
+
+def send_welcome_email(user):
+    send_email(_('[Foody] Welcome to Foody!'),
+               sender=current_app.config['ADMINS'][0],
+               recipients=[user.email],
+               text_body=render_template('email/welcome.txt',
+                                         user=user),
+               html_body=render_template('email/welcome.html',
+                                         user=user))

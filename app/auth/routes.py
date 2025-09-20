@@ -8,7 +8,7 @@ from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, \
     ResetPasswordRequestForm, ResetPasswordForm
 from app.models import User
-from app.auth.email import send_password_reset_email
+from app.auth.email import send_password_reset_email, send_welcome_email
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -46,6 +46,15 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+        
+        # Send welcome email to the new user
+        try:
+            send_welcome_email(user)
+        except Exception as e:
+            # Log the error but don't fail registration if email fails
+            from flask import current_app
+            current_app.logger.error(f'Failed to send welcome email to {user.email}: {str(e)}')
+        
         flash(_('Congratulations, you are now a registered user!'))
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', title=_('Register'),
