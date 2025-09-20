@@ -95,3 +95,4 @@ echo "  - View logs: docker-compose logs -f"
 echo "  - Stop services: docker-compose down"
 echo "  - Restart services: docker-compose restart"
 echo "  - Update application: docker-compose up --build -d"
+
