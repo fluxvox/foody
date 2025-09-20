@@ -1,0 +1,26 @@
+[Unit]
+Description=Foody Recipe Sharing Platform
+After=network.target mariadb.service
+Wants=mariadb.service
+
+[Service]
+Type=simple
+User=student
+Group=student
+WorkingDirectory=/home/student/foody
+Environment=PATH=/home/student/foody/venv/bin
+Environment=FLASK_APP=foody.py
+Environment=FLASK_ENV=production
+Environment=SERVER_NAME=lab10.ifalabs.org
+Environment=LOG_TO_STDOUT=true
+EnvironmentFile=/home/student/foody/.env
+ExecStart=/home/student/foody/venv/bin/gunicorn --config gunicorn.conf.py foody:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=foody
+
+[Install]
+WantedBy=multi-user.target

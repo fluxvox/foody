@@ -10,50 +10,32 @@ from flask import current_app, url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import redis
-import rq
+# Redis and RQ disabled for local deployment
 from app import db, login
-from app.search import add_to_index, remove_from_index, query_index
+# Search functions disabled for local deployment
 
 
 class SearchableMixin:
     @classmethod
     def search(cls, expression, page, per_page):
-        ids, total = query_index(cls.__tablename__, expression, page, per_page)
-        if total == 0:
-            return [], 0
-        when = []
-        for i in range(len(ids)):
-            when.append((ids[i], i))
-        query = sa.select(cls).where(cls.id.in_(ids)).order_by(
-            db.case(*when, value=cls.id))
-        return db.session.scalars(query), total
+        # Search disabled for local deployment - use database LIKE queries instead
+        # This is handled in the routes directly
+        return [], 0
 
     @classmethod
     def before_commit(cls, session):
-        session._changes = {
-            'add': list(session.new),
-            'update': list(session.dirty),
-            'delete': list(session.deleted)
-        }
+        # Search indexing disabled for local deployment
+        pass
 
     @classmethod
     def after_commit(cls, session):
-        for obj in session._changes['add']:
-            if isinstance(obj, SearchableMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes['update']:
-            if isinstance(obj, SearchableMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes['delete']:
-            if isinstance(obj, SearchableMixin):
-                remove_from_index(obj.__tablename__, obj)
-        session._changes = None
+        # Search indexing disabled for local deployment
+        pass
 
     @classmethod
     def reindex(cls):
-        for obj in db.session.scalars(sa.select(cls)):
-            add_to_index(cls.__tablename__, obj)
+        # Search indexing disabled for local deployment
+        pass
 
 
 db.event.listen(db.session, 'before_commit', SearchableMixin.before_commit)
@@ -211,10 +193,10 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
         return n
 
     def launch_task(self, name, description, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue(f'app.tasks.{name}', self.id,
-                                                *args, **kwargs)
-        task = Task(id=rq_job.get_id(), name=name, description=description,
-                    user=self)
+        # Task system disabled for local deployment
+        # Return a dummy task for compatibility
+        task = Task(id=f"local-{name}-{self.id}", name=name, description=description,
+                    user=self, complete=True)
         db.session.add(task)
         return task
 
@@ -523,12 +505,9 @@ class Task(db.Model):
     user: so.Mapped[User] = so.relationship(back_populates='tasks')
 
     def get_rq_job(self):
-        try:
-            rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
-        except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
-            return None
-        return rq_job
+        # Task system disabled for local deployment
+        return None
 
     def get_progress(self):
-        job = self.get_rq_job()
-        return job.meta.get('progress', 0) if job is not None else 100
+        # Task system disabled for local deployment
+        return 100

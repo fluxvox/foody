@@ -1,6 +1,6 @@
 # 🍳 Foody - Recipe Sharing Platform
 
-A comprehensive recipe sharing platform built with Flask, featuring a 1-5 star rating system, Docker containerization, and REST API. Transform your cooking experience by sharing recipes, discovering new dishes, and rating your favorites!
+A comprehensive recipe sharing platform built with Flask, featuring a 1-5 star rating system, MariaDB database, and REST API. Transform your cooking experience by sharing recipes, discovering new dishes, and rating your favorites!
 
 ## 🎯 Overview
 
@@ -31,11 +31,11 @@ Foody is a modern recipe sharing platform that allows users to:
 - **RESTful Design**: Clean API with proper HTTP methods and status codes
 - **Pagination Support**: Efficient handling of large recipe collections
 
-### 🐳 Docker Ready
-- **Production Deployment**: Complete Docker containerization for production
-- **Local Testing**: Easy local development and testing setup
-- **Multi-Service Architecture**: PostgreSQL, Redis, Elasticsearch, and Nginx
-- **Health Monitoring**: Built-in health checks and monitoring
+### 🚀 Production Ready
+- **Local Deployment**: Optimized for small servers (2GB RAM, 2 CPU cores)
+- **MariaDB Database**: Lightweight and efficient database solution
+- **Nginx + Gunicorn**: High-performance web server setup
+- **Systemd Integration**: Automatic startup and service management
 
 ## 🚀 Quick Start
 
@@ -100,20 +100,42 @@ docker compose -f docker-compose.local.yml down
 
 ### Production Deployment
 
-1. **Configure environment:**
+For production deployment on a small server (2GB RAM, 2 CPU cores), see the comprehensive [DEPLOYMENT.md](DEPLOYMENT.md) guide.
+
+**Quick deployment steps:**
+
+1. **Install dependencies:**
    ```bash
+   sudo apt update && sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server
+   ```
+
+2. **Configure database:**
+   ```bash
+   sudo mysql_secure_installation
+   # Create database and user (see DEPLOYMENT.md for details)
+   ```
+
+3. **Setup application:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
    cp production.env.example .env
-   nano .env  # Edit with your production values
+   # Edit .env with your configuration
+   flask db upgrade
    ```
 
-2. **Deploy:**
+4. **Configure services:**
    ```bash
-   ./deploy.sh
+   sudo cp foody.service /etc/systemd/system/
+   sudo cp nginx.conf /etc/nginx/sites-available/foody
+   sudo systemctl enable foody nginx mariadb
+   sudo systemctl start foody nginx mariadb
    ```
 
-3. **Access your application:**
-   - Web Interface: https://your-domain.com
-   - API Base: https://your-domain.com/api
+5. **Access your application:**
+   - Web Interface: http://your-domain.com
+   - API Base: http://your-domain.com/api
 
 ## 📊 Database Schema
 
