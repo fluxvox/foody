@@ -18,9 +18,11 @@ cd /etc/ssl/foody
 sudo -u student mkcert localhost lab10.ifalabs.org 127.0.0.1 ::1
 sudo chown -R student:student /etc/ssl/foody
 
-# 3. Check if certificates exist
-if [ -f "/etc/ssl/foody/localhost+2.pem" ] && [ -f "/etc/ssl/foody/localhost+2-key.pem" ]; then
-    echo "✅ Certificates generated successfully"
+# 3. Check if certificates exist (check for any localhost+*.pem file)
+if ls /etc/ssl/foody/localhost+*.pem 1> /dev/null 2>&1; then
+    CERT_FILE=$(ls /etc/ssl/foody/localhost+*.pem | head -1)
+    KEY_FILE=$(ls /etc/ssl/foody/localhost+*-key.pem | head -1)
+    echo "✅ Certificates generated successfully: $CERT_FILE"
 else
     echo "❌ Certificate generation failed. Let's use Let's Encrypt instead."
     echo "🔄 Proceeding with Let's Encrypt setup..."
@@ -53,8 +55,8 @@ server {
     server_name ${DOMAIN} localhost;
     
     # SSL Configuration
-    ssl_certificate /etc/ssl/foody/localhost+2.pem;
-    ssl_certificate_key /etc/ssl/foody/localhost+2-key.pem;
+    ssl_certificate $CERT_FILE;
+    ssl_certificate_key $KEY_FILE;
     
     # SSL Security Settings
     ssl_protocols TLSv1.2 TLSv1.3;
