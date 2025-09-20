@@ -10,7 +10,7 @@ class Config:
     SERVER_NAME = os.environ.get('SERVER_NAME')
     # Use MariaDB/MySQL as default database
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql://foody:password@localhost:3306/foody'
+        'mysql+pymysql://foody:password@localhost:3306/foody'
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
