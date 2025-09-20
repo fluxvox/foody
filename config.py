@@ -7,10 +7,10 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SERVER_NAME = os.environ.get('SERVER_NAME')
+    SERVER_NAME = os.environ.get('SERVER_NAME') or 'lab10.ifalabs.org'
     # Use MariaDB/MySQL as default database
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://foody:password@localhost:3306/foody'
+        'mysql+pymysql://foody:foody123@localhost:3306/foody'
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)

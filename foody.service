@@ -11,6 +11,10 @@ WorkingDirectory=/home/student/foody
 Environment=PATH=/home/student/foody/venv/bin
 Environment=FLASK_APP=foody.py
 Environment=FLASK_ENV=production
+Environment=SERVER_NAME=lab10.ifalabs.org
+Environment=DATABASE_URL=mysql+pymysql://foody:foody123@localhost:3306/foody
+Environment=SECRET_KEY=stable-secret-key-for-foody-application-2024
+Environment=LOG_TO_STDOUT=true
 ExecStart=/home/student/foody/venv/bin/gunicorn --bind 127.0.0.1:5000 --workers 2 --timeout 30 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 foody:app
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=always
