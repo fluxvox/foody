@@ -19,7 +19,7 @@ sudo apt update && sudo apt upgrade -y
 
 ### 2. Install Required Packages
 ```bash
-sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server
+sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server certbot python3-certbot-nginx
 ```
 
 ### 3. Install Python Dependencies
@@ -159,6 +159,35 @@ sudo systemctl reload nginx
 ```bash
 sudo systemctl enable nginx
 sudo systemctl start nginx
+```
+
+## 🔒 SSL Configuration
+
+### 1. Generate Let's Encrypt Certificate
+```bash
+# Run the automated SSL setup
+./setup-letsencrypt.sh
+
+# Or manually:
+sudo certbot --nginx -d your-domain.com
+```
+
+### 2. Verify SSL Configuration
+```bash
+# Test SSL certificate
+curl -I https://your-domain.com
+
+# Check certificate expiration
+sudo certbot certificates
+```
+
+### 3. Auto-renewal Setup
+```bash
+# Test auto-renewal
+sudo certbot renew --dry-run
+
+# Check cron job
+sudo crontab -l
 ```
 
 ## 🔍 Verification
