@@ -4,7 +4,7 @@ After=network.target mariadb.service
 Wants=mariadb.service
 
 [Service]
-Type=exec
+Type=simple
 User=student
 Group=student
 WorkingDirectory=/home/student/foody
@@ -21,15 +21,6 @@ RestartSec=3
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=foody
-
-# Security settings (balanced for production)
-NoNewPrivileges=false
-PrivateTmp=false
-ProtectSystem=false
-ProtectHome=false
-ReadWritePaths=/home/student/foody/logs
-ReadWritePaths=/home/student/foody/instance
-ReadWritePaths=/home/student/foody/app.db
 
 [Install]
 WantedBy=multi-user.target
