@@ -37,9 +37,10 @@ def create_app(config_class=Config):
     babel.init_app(app, locale_selector=get_locale)
     
     # Disable Elasticsearch and Redis for local deployment
-    app.elasticsearch = None
-    app.redis = None
-    app.task_queue = None
+    # Disabled services for local deployment (removed from original tutorial)
+    app.elasticsearch = None  # Using database search instead
+    app.redis = None  # Using threading for background tasks
+    app.task_queue = None  # No external task queue needed
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

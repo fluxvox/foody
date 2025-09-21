@@ -1,4 +1,5 @@
-# Fix MySQL driver issue
+# Fix MySQL driver issue - PyMySQL compatibility for MariaDB
+# This is required for MariaDB/MySQL support in SQLAlchemy
 try:
     import pymysql
     pymysql.install_as_MySQLdb()
@@ -8,7 +9,7 @@ except ImportError:
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from app import create_app, db
-from app.models import User, Recipe, Message, Notification, Task, Rating
+from app.models import User, Recipe, Message, Notification, Task, Rating  # Extended models beyond original tutorial
 
 app = create_app()
 

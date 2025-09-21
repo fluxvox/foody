@@ -10,16 +10,16 @@ from flask import current_app, url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-# Redis and RQ disabled for local deployment
+# Redis and RQ disabled for local deployment (removed from original tutorial)
 from app import db, login
-# Search functions disabled for local deployment
+# Search functions disabled for local deployment - using database LIKE queries instead
 
 
 class SearchableMixin:
     @classmethod
     def search(cls, expression, page, per_page):
         # Search disabled for local deployment - use database LIKE queries instead
-        # This is handled in the routes directly
+        # This is handled in the routes directly (replaces Elasticsearch from original tutorial)
         return [], 0
 
     @classmethod
