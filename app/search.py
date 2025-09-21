@@ -3,17 +3,17 @@ import sqlalchemy as sa
 
 
 def add_to_index(index, model):
-    # Elasticsearch disabled - no-op for local deployment
+    # Elasticsearch disabled - no-op for local deployment (removed from original tutorial)
     pass
 
 
 def remove_from_index(index, model):
-    # Elasticsearch disabled - no-op for local deployment
+    # Elasticsearch disabled - no-op for local deployment (removed from original tutorial)
     pass
 
 
 def query_index(index, query, page, per_page):
-    # Fallback to database search when Elasticsearch is not available
+    # Fallback to database search when Elasticsearch is not available (replaces Elasticsearch from original tutorial)
     if index == 'recipe':
         # Import here to avoid circular import
         from app import db

@@ -1,4 +1,4 @@
-# Task system disabled for local deployment
+# Task system disabled for local deployment (removed Redis/RQ from original tutorial)
 # This file is kept for compatibility but tasks are handled synchronously
 
 import json
@@ -15,8 +15,8 @@ app.app_context().push()
 
 
 def _set_task_progress(progress):
-    # Task system disabled for local deployment
-    # Tasks are handled synchronously
+    # Task system disabled for local deployment (removed Redis/RQ from original tutorial)
+    # Tasks are handled synchronously using Python threading
     pass
 
 
