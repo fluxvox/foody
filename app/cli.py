@@ -67,21 +67,8 @@ def test(recipient, type):
                 test_user = User(username='testuser', email=recipient)
                 test_user.set_password('testpassword')
                 
-                # Send welcome email with logo attachment (testing if attachments work)
+                # Send welcome email with simple content (no HTML to avoid spam)
                 from app.email import send_email
-                import os
-                logo_path = os.path.join(app.root_path, 'static', 'foody-logo.png')
-                attachments = []
-                
-                # Add logo as attachment if it exists
-                if os.path.exists(logo_path):
-                    with open(logo_path, 'rb') as f:
-                        logo_data = f.read()
-                    attachments = [('foody-logo.png', 'image/png', logo_data)]
-                    click.echo(f"📎 Adding logo attachment from {logo_path}")
-                else:
-                    click.echo(f"⚠️  Logo not found at {logo_path}")
-                
                 send_email(
                     subject='[Foody] Welcome to Foody!',
                     sender=app.config['ADMINS'][0],
@@ -102,7 +89,6 @@ Happy cooking!
 
 The Foody Team""",
                     html_body=None,  # No HTML content to avoid spam filtering
-                    attachments=attachments,
                     sync=True
                 )
                 click.echo("✅ Welcome email sent successfully!")
