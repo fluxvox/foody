@@ -1,0 +1,24 @@
+Hi there!
+
+{{ sender_name }} shared a recipe with you:
+
+🍝 {{ recipe.title }}
+by {{ recipe.author.username }}
+
+{{ recipe.description }}
+
+Recipe Details:
+- Prep Time: {{ recipe.prep_time }} minutes
+- Servings: {{ recipe.servings }}
+- Rating: {{ recipe.average_rating() if recipe.average_rating() else 'No ratings yet' }}
+
+View the full recipe: https://lab10.ifalabs.org/recipe/{{ recipe.id }}
+
+Happy cooking!
+
+The Foody Team
+
+---
+You received this email because {{ sender_name }} shared a recipe with you.
+Visit Foody: https://lab10.ifalabs.org
+© 2024 Foody. All rights reserved.

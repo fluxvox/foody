@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Shared with You!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .header h1 {
+            color: #e74c3c;
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 30px 20px;
+            border: 1px solid #dee2e6;
+        }
+        .recipe-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+        }
+        .recipe-title {
+            color: #e74c3c;
+            font-size: 20px;
+            margin: 0 0 10px 0;
+        }
+        .recipe-author {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .recipe-description {
+            margin-bottom: 15px;
+        }
+        .recipe-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .footer {
+            background-color: #e9ecef;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍝 Recipe Shared with You!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Hi there!</p>
+        <p><strong>{{ sender_name }}</strong> shared a recipe with you:</p>
+        
+        <div class="recipe-card">
+            <h2 class="recipe-title">🍝 {{ recipe.title }}</h2>
+            <div class="recipe-author">by {{ recipe.author.username }}</div>
+            <div class="recipe-description">{{ recipe.description }}</div>
+            
+            <div class="recipe-meta">
+                <span>⏱️ {{ recipe.prep_time }} min prep</span>
+                <span>👥 {{ recipe.servings }} servings</span>
+                <span>⭐ {{ recipe.average_rating() if recipe.average_rating() else 'No ratings yet' }}</span>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="https://lab10.ifalabs.org/recipe/{{ recipe.id }}" class="cta-button">
+                    View Recipe 🍳
+                </a>
+            </div>
+        </div>
+        
+        <p>Happy cooking!</p>
+        <p><strong>The Foody Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>You received this email because {{ sender_name }} shared a recipe with you.</p>
+        <p>Visit Foody: https://lab10.ifalabs.org</p>
+        <p>&copy; 2024 Foody. All rights reserved.</p>
+    </div>
+</body>
+</html>
