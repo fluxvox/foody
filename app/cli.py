@@ -140,7 +140,7 @@ Test Chef shared a recipe with you: "{recipe.title}"
 Recipe Details:
 - Prep Time: {recipe.prep_time} minutes
 - Servings: {recipe.servings}
-- Rating: {recipe.average_rating() if recipe.average_rating() else 'No ratings yet'}
+- Rating: No ratings yet
 
 View the full recipe: https://lab10.ifalabs.org/recipe/{recipe.id}
 
@@ -218,19 +218,79 @@ def send_all(recipient):
         try:
             # Welcome email
             click.echo("Sending welcome email...")
-            send_welcome_email(test_user)
+            from app.email import send_email
+            send_email(
+                subject='[Foody] Welcome to Foody!',
+                sender=app.config['ADMINS'][0],
+                recipients=[recipient],
+                text_body=f"""Dear {test_user.username},
+
+Welcome to Foody! We're excited to have you join our community of food enthusiasts.
+
+🚀 Get Started:
+- Share Recipes: Upload your favorite recipes with photos and detailed instructions
+- Discover New Dishes: Browse recipes from our community
+- Rate & Review: Help others find the best recipes with your ratings
+- Follow Chefs: Connect with other food lovers
+
+Start cooking: https://lab10.ifalabs.org
+
+Happy cooking!
+
+The Foody Team""",
+                html_body=None,
+                sync=True
+            )
             click.echo("✅ Welcome email sent")
             
             # Password reset email
             click.echo("Sending password reset email...")
-            send_password_reset_email(test_user)
+            token = test_user.get_reset_password_token()
+            send_email(
+                subject='[Foody] Reset Your Password',
+                sender=app.config['ADMINS'][0],
+                recipients=[recipient],
+                text_body=f"""Dear {test_user.username},
+
+To reset your password click on the following link:
+
+https://lab10.ifalabs.org/auth/reset_password/{token}
+
+If you have not requested a password reset simply ignore this message.
+
+Sincerely,
+
+The Foody Team""",
+                html_body=None,
+                sync=True
+            )
             click.echo("✅ Password reset email sent")
             
             # Recipe share email (if recipe exists)
             recipe = db.session.scalar(db.select(Recipe).limit(1))
             if recipe:
                 click.echo("Sending recipe share email...")
-                send_recipe_share_email(recipe, 'Test Chef', recipient)
+                send_email(
+                    subject='[Foody] Test Chef shared a recipe with you!',
+                    sender=app.config['ADMINS'][0],
+                    recipients=[recipient],
+                    text_body=f"""Hi there!
+
+Test Chef shared a recipe with you: "{recipe.title}"
+
+Recipe Details:
+- Prep Time: {recipe.prep_time} minutes
+- Servings: {recipe.servings}
+- Rating: No ratings yet
+
+View the full recipe: https://lab10.ifalabs.org/recipe/{recipe.id}
+
+Happy cooking!
+
+The Foody Team""",
+                    html_body=None,
+                    sync=True
+                )
                 click.echo("✅ Recipe share email sent")
             else:
                 click.echo("⚠️  No recipes found, skipping recipe share email")
@@ -239,7 +299,24 @@ def send_all(recipient):
             rating_user = db.session.scalar(db.select(User).limit(1))
             if recipe and rating_user:
                 click.echo("Sending rating notification email...")
-                send_rating_notification_email(recipe, rating_user, 5)
+                send_email(
+                    subject='[Foody] Someone rated your recipe!',
+                    sender=app.config['ADMINS'][0],
+                    recipients=[recipe.author.email],
+                    text_body=f"""Dear {recipe.author.username},
+
+Great news! {rating_user.username} just rated your recipe "{recipe.title}" with 5 stars!
+
+Recipe: {recipe.title}
+Rating: 5/5 stars
+Rated by: {rating_user.username}
+
+Keep up the great cooking!
+
+The Foody Team""",
+                    html_body=None,
+                    sync=True
+                )
                 click.echo("✅ Rating notification email sent")
             else:
                 click.echo("⚠️  No recipes or users found, skipping rating notification email")
