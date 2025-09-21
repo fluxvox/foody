@@ -127,7 +127,29 @@ The Foody Team""",
                 # Get a recipe from database or create test data
                 recipe = db.session.scalar(db.select(Recipe).limit(1))
                 if recipe:
-                    send_recipe_share_email(recipe, 'Test Chef', recipient)
+                    # Send recipe share email with simple content (no HTML to avoid spam)
+                    from app.email import send_email
+                    send_email(
+                        subject='[Foody] Test Chef shared a recipe with you!',
+                        sender=app.config['ADMINS'][0],
+                        recipients=[recipient],
+                        text_body=f"""Hi there!
+
+Test Chef shared a recipe with you: "{recipe.title}"
+
+Recipe Details:
+- Prep Time: {recipe.prep_time} minutes
+- Servings: {recipe.servings}
+- Rating: {recipe.average_rating() if recipe.average_rating() else 'No ratings yet'}
+
+View the full recipe: https://lab10.ifalabs.org/recipe/{recipe.id}
+
+Happy cooking!
+
+The Foody Team""",
+                        html_body=None,  # No HTML content to avoid spam filtering
+                        sync=True
+                    )
                     click.echo("✅ Recipe share email sent successfully!")
                 else:
                     click.echo("❌ No recipes found in database. Create a recipe first.")
@@ -137,7 +159,26 @@ The Foody Team""",
                 recipe = db.session.scalar(db.select(Recipe).limit(1))
                 rating_user = db.session.scalar(db.select(User).limit(1))
                 if recipe and rating_user:
-                    send_rating_notification_email(recipe, rating_user, 5)
+                    # Send rating notification email with simple content (no HTML to avoid spam)
+                    from app.email import send_email
+                    send_email(
+                        subject='[Foody] Someone rated your recipe!',
+                        sender=app.config['ADMINS'][0],
+                        recipients=[recipe.author.email],
+                        text_body=f"""Dear {recipe.author.username},
+
+Great news! {rating_user.username} just rated your recipe "{recipe.title}" with 5 stars!
+
+Recipe: {recipe.title}
+Rating: 5/5 stars
+Rated by: {rating_user.username}
+
+Keep up the great cooking!
+
+The Foody Team""",
+                        html_body=None,  # No HTML content to avoid spam filtering
+                        sync=True
+                    )
                     click.echo("✅ Rating notification email sent successfully!")
                 else:
                     click.echo("❌ No recipes or users found in database.")
