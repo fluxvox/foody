@@ -1,6 +1,6 @@
 # 🍳 Foody - Recipe Sharing Platform
 
-A comprehensive recipe sharing platform built with Flask, featuring a 1-5 star rating system, MariaDB database, and REST API. Transform your cooking experience by sharing recipes, discovering new dishes, and rating your favorites!
+A comprehensive recipe sharing platform built with Flask, featuring a 1-5 star rating system, MariaDB database, and REST API. Optimized for local deployment on small servers with Nginx, Gunicorn, and Systemd. Transform your cooking experience by sharing recipes, discovering new dishes, and rating your favorites!
 
 ## 🎯 Overview
 
@@ -37,6 +37,7 @@ Foody is a modern recipe sharing platform that allows users to:
 - **Nginx + Gunicorn**: High-performance web server setup
 - **SSL/TLS Security**: Let's Encrypt certificates with auto-renewal
 - **Systemd Integration**: Automatic startup and service management
+- **Email System**: Postfix integration for notifications and password resets
 
 ## 🚀 Quick Start
 
@@ -69,51 +70,37 @@ Foody is a modern recipe sharing platform that allows users to:
    - Web Interface: http://localhost:5002
    - API Base: http://localhost:5002/api
 
-### Docker Local Testing
+### Local Testing
 
-1. **One-command testing:**
+1. **Test API endpoints:**
    ```bash
-   ./test-local.sh
+   ./test-api.sh
    ```
 
 2. **Access the application:**
-   - Web Interface: http://localhost:5001
-   - Health Check: http://localhost:5001/health
-   - API Base: http://localhost:5001/api
+   - Web Interface: http://localhost:5002
+   - Health Check: http://localhost:5002/health
+   - API Base: http://localhost:5002/api
 
-## 🐳 Docker Deployment
+## 🚀 Production Deployment
 
-### Local Testing with Docker
-
-```bash
-# Start all services
-docker compose -f docker-compose.local.yml up --build -d
-
-# Check status
-docker compose -f docker-compose.local.yml ps
-
-# View logs
-docker compose -f docker-compose.local.yml logs -f
-
-# Stop services
-docker compose -f docker-compose.local.yml down
-```
-
-### Production Deployment
-
-For production deployment on a small server (2GB RAM, 2 CPU cores), see the comprehensive [DEPLOYMENT.md](DEPLOYMENT.md) guide.
+For production deployment on a small server (2GB RAM, 2 CPU cores), follow the comprehensive deployment guide below.
 
 **Quick deployment steps:**
 
 1. **Install dependencies:**
    ```bash
-   sudo apt update && sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server
+   sudo apt update && sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server postfix
    ```
 
 2. **Configure database:**
    ```bash
    sudo mysql_secure_installation
-   # Create database and user (see DEPLOYMENT.md for details)
+   # Create database and user
+   sudo mysql -e "CREATE DATABASE foody;"
+   sudo mysql -e "CREATE USER 'foody'@'localhost' IDENTIFIED BY 'your_password';"
+   sudo mysql -e "GRANT ALL PRIVILEGES ON foody.* TO 'foody'@'localhost';"
+   sudo mysql -e "FLUSH PRIVILEGES;"
    ```
 
 3. **Setup application:**
@@ -130,11 +117,16 @@ For production deployment on a small server (2GB RAM, 2 CPU cores), see the comp
    ```bash
    sudo cp foody.service /etc/systemd/system/
    sudo cp nginx.conf /etc/nginx/sites-available/foody
-   sudo systemctl enable foody nginx mariadb
-   sudo systemctl start foody nginx mariadb
+   sudo systemctl enable foody nginx mariadb postfix
+   sudo systemctl start foody nginx mariadb postfix
    ```
 
-5. **Access your application:**
+5. **Setup SSL (optional):**
+   ```bash
+   ./setup-letsencrypt.sh
+   ```
+
+6. **Access your application:**
    - Web Interface: http://your-domain.com
    - API Base: http://your-domain.com/api
 
@@ -212,24 +204,24 @@ foody/
 │   └── templates/     # Jinja2 templates
 ├── migrations/        # Database migrations
 ├── deployment/        # Production deployment configs
-├── docker-compose.yml # Production Docker setup
-├── docker-compose.local.yml # Local testing setup
-├── Dockerfile         # Production Docker image
-├── Dockerfile.local   # Local testing Docker image
 ├── foody.py          # Application entry point
-└── requirements.txt  # Python dependencies
+├── foody.service      # Systemd service file
+├── nginx.conf         # Nginx configuration
+├── gunicorn.conf.py   # Gunicorn configuration
+├── requirements.txt   # Python dependencies
+└── test-api.sh        # API testing script
 ```
 
 ### Key Technologies
 
 - **Backend**: Flask, SQLAlchemy, Flask-Migrate
-- **Database**: PostgreSQL (production), SQLite (development)
-- **Cache**: Redis
-- **Search**: Elasticsearch
+- **Database**: MariaDB (production), SQLite (development)
+- **Search**: Database-based LIKE queries
 - **Frontend**: Bootstrap 5, JavaScript
-- **Containerization**: Docker, Docker Compose
 - **Web Server**: Gunicorn, Nginx
 - **Authentication**: Flask-Login, JWT tokens
+- **Email**: Postfix MTA
+- **Process Management**: Systemd
 
 ### Environment Configuration
 
@@ -237,20 +229,18 @@ Copy `production.env.example` to `.env` and configure:
 
 ```bash
 # Database Configuration
-POSTGRES_DB=foody
-POSTGRES_USER=foody
-POSTGRES_PASSWORD=your_secure_password
+DATABASE_URL=mysql+pymysql://foody:your_password@localhost/foody
 
 # Application Configuration
 SECRET_KEY=your_very_long_secret_key
 FLASK_ENV=production
+SERVER_NAME=your-domain.com
 
 # Email Configuration
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=true
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_email_password
+MAIL_SERVER=localhost
+MAIL_PORT=25
+MAIL_USE_TLS=false
+ADMINS=admin@your-domain.com
 ```
 
 ## 🧪 Testing
@@ -282,16 +272,17 @@ curl http://localhost:5001/api/recipes
 
 ### Common Issues
 
-#### Docker Issues
+#### Service Issues
 ```bash
-# Check Docker status
-docker info
+# Check service status
+sudo systemctl status foody nginx mariadb
 
-# Check container logs
-docker compose -f docker-compose.local.yml logs
+# Check service logs
+sudo journalctl -u foody -f
+sudo journalctl -u nginx -f
 
 # Restart services
-docker compose -f docker-compose.local.yml restart
+sudo systemctl restart foody nginx
 ```
 
 #### Port Conflicts
@@ -304,32 +295,27 @@ http://localhost:5001
 #### Database Issues
 ```bash
 # Check database connection
-docker compose -f docker-compose.local.yml exec db psql -U foody -d foody
+mysql -u foody -p foody
 
 # Run migrations
-docker compose -f docker-compose.local.yml exec web flask db upgrade
+flask db upgrade
 ```
 
 ## 🚀 Production Deployment
 
 ### Server Requirements
 
-- Ubuntu 20.04+ server
+- Debian/Ubuntu 20.04+ server
 - 2GB+ RAM
 - 10GB+ disk space
-- Docker and Docker Compose
+- Python 3.8+, Nginx, MariaDB, Postfix
 
 ### Deployment Steps
 
 1. **Server Setup:**
    ```bash
-   # Install Docker
-   curl -fsSL https://get.docker.com -o get-docker.sh
-   sudo sh get-docker.sh
-   
-   # Install Docker Compose
-   sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-   sudo chmod +x /usr/local/bin/docker-compose
+   # Install dependencies
+   sudo apt update && sudo apt install -y python3 python3-pip python3-venv nginx mariadb-server postfix
    ```
 
 2. **Application Deployment:**
@@ -338,7 +324,7 @@ docker compose -f docker-compose.local.yml exec web flask db upgrade
    cd foody
    cp production.env.example .env
    # Edit .env with your production values
-   ./deploy.sh
+   # Follow the manual setup steps above
    ```
 
 3. **SSL Configuration:**
@@ -355,8 +341,9 @@ docker compose -f docker-compose.local.yml exec web flask db upgrade
 - **SSL/TLS Termination**: Automatic HTTPS with certificate management
 - **Rate Limiting**: DDoS protection and abuse prevention
 - **Security Headers**: Comprehensive web security
-- **Health Monitoring**: Container health checks and monitoring
-- **Logging**: Structured logging with configurable levels
+- **Health Monitoring**: Systemd service monitoring and health checks
+- **Logging**: Structured logging with systemd journal
+- **Email System**: Postfix integration for notifications
 - **Backup Support**: Database backup and restore capabilities
 
 ## 📈 Performance & Scaling
@@ -364,11 +351,10 @@ docker compose -f docker-compose.local.yml exec web flask db upgrade
 ### Optimization Features
 
 - **Database Connection Pooling**: Efficient database connections
-- **Redis Caching**: Fast data retrieval and session management
-- **Elasticsearch Search**: Fast full-text search capabilities
+- **Database Search**: Fast full-text search with LIKE queries
 - **Gzip Compression**: Reduced bandwidth usage
 - **Static File Optimization**: Efficient asset delivery
-- **Horizontal Scaling**: Easy scaling of web services
+- **Systemd Service Management**: Reliable process management
 
 ### Monitoring
 
@@ -377,10 +363,10 @@ docker compose -f docker-compose.local.yml exec web flask db upgrade
 curl https://yourdomain.com/health
 
 # Monitor resource usage
-docker stats
+systemctl status foody nginx mariadb
 
 # View application logs
-docker compose logs -f web
+sudo journalctl -u foody -f
 ```
 
 ## 🔒 Security
@@ -419,16 +405,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For issues and questions:
 
-1. Check the logs: `docker compose logs`
-2. Verify configuration: `docker compose config`
-3. Check service health: `docker compose ps`
+1. Check the logs: `sudo journalctl -u foody -f`
+2. Verify configuration: `sudo systemctl status foody`
+3. Check service health: `systemctl status foody nginx mariadb`
 4. Review this documentation
 
 ## 🎉 Acknowledgments
 
-- Built on the Flask Mega-Tutorial by Miguel Grinberg
+- **Forked from**: [Flask Mega-Tutorial by Miguel Grinberg](http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world)
+- **Educational Purpose**: This project was developed for a diploma program and is intended for educational purposes only
 - Uses Bootstrap 5 for responsive design
-- Docker containerization for easy deployment
+- Local deployment optimized for small servers
 - Community-driven recipe rating system
 
 ---
